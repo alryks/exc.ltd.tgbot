@@ -1,6 +1,5 @@
 import json
 
-from bson import ObjectId
 from flask import jsonify, request
 
 from .errors import OK, ERROR, MISSING_PARAMETER_ERROR_TG_ID, BAD_TG_ID_ERROR, MISSING_PARAMETER_ERROR_STATUS, \

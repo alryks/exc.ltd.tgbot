@@ -1,12 +1,10 @@
 import io
-import os
 import re
 from datetime import datetime
 
 import telebot
 from dateparser.date import DateDataParser
 from telebot import types
-from telebot.types import LinkPreviewOptions
 from telebot.util import quick_markup
 
 from .assets import NameNotFoundException, PhoneNotFoundException, AgeNotFoundException, COUNTRIES, \
@@ -17,7 +15,6 @@ from .scenario import db
 from bson import ObjectId
 import phonenumbers
 from PIL import Image
-import gridfs
 from pymongo.collection import Collection, ReturnDocument
 
 from .state import Status

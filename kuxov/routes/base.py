@@ -1,12 +1,8 @@
-import os
 from flask import Flask, jsonify
-from flask_cors import CORS
 from flasgger import Swagger
 
 from .access import add_access_endpoints
 from .apps import add_apps_endpoints
-# from ..utils import CustomJSONEncoder
-# from ..settings import SECRET
 from .jobs import add_jobs_endpoints
 from .utils import CustomJSONEncoder
 

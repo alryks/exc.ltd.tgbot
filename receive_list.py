@@ -1,7 +1,6 @@
 import argparse
 import requests
 from pprint import pprint
-import chardet
 
 
 def parse_args():

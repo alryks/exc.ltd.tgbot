@@ -1,5 +1,3 @@
-import json
-
 from flask import jsonify, request
 
 from .errors import OK, ERROR, MISSING_PARAMETER_ERROR_JOBS

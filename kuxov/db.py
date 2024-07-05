@@ -1,5 +1,4 @@
 from bson import ObjectId
-from pymongo import MongoClient
 from pymongo.collection import Collection
 
 from .scenario import db
@@ -8,11 +7,11 @@ from .state import State, EnterMode
 from .scenario import ADMIN_IDS
 
 
-class KuxovDb:
+class UsersDb:
     kuxov = db.users
 
     def __init__(self):
-        super(KuxovDb, self).__init__()
+        super(UsersDb, self).__init__()
 
     def reset_state(self, tg_id):
         self.set_current_state(tg_id,
@@ -99,7 +98,7 @@ class KuxovDb:
 
 
 class AccessDb:
-    access: Collection = db.kuxov_access
+    access: Collection = db.access
 
     def __init__(self):
         super(AccessDb, self).__init__()

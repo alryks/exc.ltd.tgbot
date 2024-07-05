@@ -2,7 +2,6 @@ import json
 import sys
 from datetime import datetime
 import uuid
-from functools import wraps
 from time import time
 
 from bson import ObjectId

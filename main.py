@@ -11,11 +11,11 @@ from kuxov.assets import FIRST_INTERACTION_MESSAGE, ENTER_NAME_MESSAGE, ENTER_PH
     ResidenceReplyMarkup, WELCOME_MESSAGE, NoMarkup, GenderNotFoundException, ENTER_GENDER_MESSAGE, GenderReplyMarkup, \
     create_jobs_markup, exception_handler, ENTER_JOBS_MESSAGE, AnotherDocumentReplyMarkup, create_commands_markup, \
     create_list_commands_markup, DONT_UNDERSTOOD_MESSAGE, PassportNotEnoughException, INVALID_JOBS_LIST_MESSAGE
-from kuxov.db import KuxovDb, AccessDb
+from kuxov.db import UsersDb, AccessDb
 from kuxov.state import State, EnterMode
 
 bot = TeleBot(token=BOT_TOKEN)
-db = KuxovDb()
+db = UsersDb()
 access_db = AccessDb()
 
 

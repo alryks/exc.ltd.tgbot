@@ -4,33 +4,31 @@ from pathlib import Path
 from typing import Union
 
 import boto3
-import filetype
 import requests
 from PIL import Image
 from bson import ObjectId
 import tempfile
 
+from .scenario import CDN_BUCKET, CDN_REGION, CDN_ENDPOINT, CDN_ACCESS_KEY_ID, CDN_SECRET_ACCESS_KEY
+
 
 class CDN(object):
-    def __init__(self, endpoint_url="http://213.219.215.209:9000",
-                 aws_access_key_id="hnPkbztWeXCa7cpMJmeu",
-                 aws_secret_access_key="9eYISaJQYGGNtthCHqnRbd6n90aZZ6YAqsbwLlXe",
-                 bucket_name="kuxov",
-                 public_url="http://213.219.215.209:9000/kuxov"):
+    def __init__(self):
         super(CDN, self).__init__()
-        if public_url is None:
-            public_url = endpoint_url
+
+        public_url = f"{CDN_ENDPOINT}/{CDN_BUCKET}"
 
         self.s3 = boto3.resource(
             "s3",
-            endpoint_url=endpoint_url,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
+            endpoint_url=CDN_ENDPOINT,
+            aws_access_key_id=CDN_ACCESS_KEY_ID,
+            aws_secret_access_key=CDN_SECRET_ACCESS_KEY,
         )
-        print("Use CDN.")
-        print(f"Use {bucket_name}.")
-        self.bucket = self.s3.Bucket(bucket_name)
-        self.endpoint_url = endpoint_url
+
+        print("Using CDN.")
+        print(f"Using {CDN_BUCKET}.")
+        self.bucket = self.s3.Bucket(CDN_BUCKET)
+        self.endpoint_url = CDN_ENDPOINT
         self.public_url = public_url
 
     def host_photo(self, photo: Image.Image):
