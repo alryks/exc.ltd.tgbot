@@ -8,7 +8,7 @@ def parse_args():
                         default='0.0.0.0',
                         type=str)
     parser.add_argument("--port",
-                        default=6250,
+                        default=5040,
                         type=int)
     parser.add_argument("--debug",
                         action="store_true")
