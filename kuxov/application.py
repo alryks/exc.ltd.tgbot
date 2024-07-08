@@ -1,6 +1,6 @@
 import io
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import telebot
 from dateparser.date import DateDataParser
@@ -217,7 +217,9 @@ class Application(object):
     @staticmethod
     def extract_age(text: str):
         text = text.strip()
-        dt = ddp.get_date_data(text).date_obj
+        dt: datetime = ddp.get_date_data(text).date_obj
+        if dt.year == datetime.now().year:
+            raise AgeNotFoundException()
         if dt is None:
             raise AgeNotFoundException()
         return dt
@@ -293,10 +295,12 @@ class Application(object):
 
     @classmethod
     def list_accepted(cls, user_id=None):
+        dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
         return [Application(obj['_id'],
                             data=obj)
                 for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True},
-                                                  "status": Status.ACCEPTED.value})]
+                                                  "status": Status.ACCEPTED.value,
+                                                  "_id": {"$gt": dt}})]
 
     @classmethod
     def list_declined(cls, user_id=None):
@@ -402,3 +406,23 @@ class Application(object):
         if status is not None:
             status = Status(status)
         return status
+
+    @classmethod
+    def count_apps(cls):
+        return cls.applications.count_documents({})
+
+    @classmethod
+    def count_accepted_apps(cls):
+        dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
+        return cls.applications.count_documents({"status": Status.ACCEPTED.value,
+                                                 "_id": {"$gt": dt}})
+
+    @classmethod
+    def count_declined_apps(cls):
+        return cls.applications.count_documents({"status": Status.DECLINED.value})
+
+    @classmethod
+    def count_new_apps(cls):
+        return cls.applications.count_documents({"status": {"$exists": False},
+                                                 **{main_field: {"$exists": True}
+                                                    for main_field in Application.MAIN_FIELDS}})

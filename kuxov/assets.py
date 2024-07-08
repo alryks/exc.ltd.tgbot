@@ -98,11 +98,13 @@ def create_commands_markup():
 
 
 def create_list_commands_markup():
+    from .application import Application
+
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.row(types.KeyboardButton("Все анкеты"),
-               types.KeyboardButton("Новые анкеты"), )
-    markup.row(types.KeyboardButton("Принятые анкеты"),
-               types.KeyboardButton("Отклоненные анкеты"),)
+    markup.row(types.KeyboardButton(f"Все анкеты ({Application.count_apps()})"),
+               types.KeyboardButton(f"Новые анкеты ({Application.count_new_apps()})"), )
+    markup.row(types.KeyboardButton(f"Принятые анкеты ({Application.count_accepted_apps()})"),
+               types.KeyboardButton(f"Отклоненные анкеты ({Application.count_declined_apps()})"),)
     markup.row(types.KeyboardButton("В главное меню"))
     return markup
 

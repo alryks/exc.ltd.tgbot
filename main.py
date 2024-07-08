@@ -49,25 +49,27 @@ def reset(message: types.Message):
                          State.ENTER_JOB)
 
 
-@bot.message_handler(func=lambda message: message.text in ["Список анкет",
-                                                           "Все анкеты",
-                                                           "Новые анкеты",
-                                                           "Принятые анкеты",
-                                                           "Отклоненные анкеты"])
+@bot.message_handler(func=lambda message: any(message.text.startswith(com)
+                                              for com in ["Список анкет",
+                                                          "Все анкеты",
+                                                          "Новые анкеты",
+                                                          "Принятые анкеты",
+                                                          "Отклоненные анкеты"]))
 @exception_handler(bot, db)
 def list_welcome(message: types.Message):
     tg_id = message.from_user.id
     db.set_current_state(tg_id, State.LIST_MENU)
 
-    if message.text == "Все анкеты":
+    if message.text.startswith("Все анкеты"):
         applications = Application.list(tg_id)
-    elif message.text == "Список анкет":
+    elif message.text.startswith("Список анкет"):
         applications = None
-    elif message.text == "Новые анкеты":
+    elif message.text.startswith("Новые анкеты"):
         applications = Application.list_not_verified(tg_id)
-    elif message.text == "Отклоненные анкеты":
+    elif message.text.startswith("Отклоненные анкеты"):
         applications = Application.list_declined(tg_id)
-    elif message.text == "Принятые анкеты":
+        bot.send_message(tg_id, "Обратитесь к вашему менеджеру.")
+    elif message.text.startswith("Принятые анкеты"):
         applications = Application.list_accepted(tg_id)
     else:
         applications = []
