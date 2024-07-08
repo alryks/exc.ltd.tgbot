@@ -12,7 +12,10 @@ ADMIN_IDS = [
 
 BOT_TOKEN = ""
 
-MONGO_HOST = "mongodb://localhost:27017/"
+MONGO_USER = ""
+MONGO_PASSWORD = ""
+
+MONGO_HOST = f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@localhost:27017/"
 client = MongoClient(MONGO_HOST)
 db: Database = client.TelegramBot
 
