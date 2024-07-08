@@ -8,7 +8,7 @@ def parse_args():
                         default='0.0.0.0',
                         type=str)
     parser.add_argument("--port",
-                        default=5040,
+                        default=6250,
                         type=int)
     parser.add_argument("--debug",
                         action="store_true")
@@ -16,11 +16,15 @@ def parse_args():
     return args
 
 
-def run_backend():
+def run_backend(host: str,
+                port: int,
+                debug: bool):
     app = get_backend_app()
-    app.run(host="0.0.0.0",
-            port=5000)
+    app.run(host=host,
+            port=port,
+            debug=debug,
+            threaded=True)
 
 
 if __name__ == "__main__":
-    run_backend()
+    run_backend(**vars(parse_args()))
