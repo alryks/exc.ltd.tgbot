@@ -13,6 +13,7 @@ from kuxov.assets import FIRST_INTERACTION_MESSAGE, ENTER_NAME_MESSAGE, ENTER_PH
     create_list_commands_markup, DONT_UNDERSTOOD_MESSAGE, PassportNotEnoughException, INVALID_JOBS_LIST_MESSAGE
 from kuxov.db import UsersDb, AccessDb
 from kuxov.state import State, EnterMode
+from kuxov.alert import alert
 
 bot = TeleBot(token=BOT_TOKEN)
 db = UsersDb()
@@ -22,6 +23,7 @@ access_db = AccessDb()
 @bot.message_handler(commands=['start'],)
 @bot.message_handler(func=lambda message: message.text == "В главное меню")
 @exception_handler(bot, db)
+@alert
 def welcome(message: types.Message):
     tg_id = message.from_user.id
     db.set_current_state(tg_id, State.MAIN_MENU)
@@ -31,6 +33,7 @@ def welcome(message: types.Message):
 
 @bot.message_handler(func=lambda message: message.text == "Новая анкета")
 @exception_handler(bot, db)
+@alert
 def reset(message: types.Message):
     tg_id = message.from_user.id
     db.reset_state(tg_id)
@@ -56,6 +59,7 @@ def reset(message: types.Message):
                                                           "Принятые анкеты",
                                                           "Отклоненные анкеты"]))
 @exception_handler(bot, db)
+@alert
 def list_welcome(message: types.Message):
     tg_id = message.from_user.id
     db.set_current_state(tg_id, State.LIST_MENU)
@@ -89,6 +93,7 @@ def list_welcome(message: types.Message):
 @bot.message_handler(func=lambda message: True,
                      content_types=["text", "photo"])
 @exception_handler(bot, db)
+@alert
 def send_welcome(message: types.Message):
     tg_id = message.from_user.id
     db.delete_messages(bot, tg_id)
@@ -281,6 +286,7 @@ def send_welcome(message: types.Message):
 
 
 @bot.callback_query_handler(func=lambda call: True)
+@alert
 def handle_clicks(call: types.CallbackQuery):
     tg_id = call.from_user.id
     if call.data.startswith("appedit_"):

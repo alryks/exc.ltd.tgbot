@@ -4,3 +4,7 @@ dateparser
 boto3
 Pillow
 phonenumbers
+flask
+flasgger
+requests
+parse
