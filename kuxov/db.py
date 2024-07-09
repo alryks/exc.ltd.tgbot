@@ -13,6 +13,9 @@ class UsersDb:
     def __init__(self):
         super(UsersDb, self).__init__()
 
+    def get_all_user_ids(self):
+        return [user['tg_id'] for user in self.users.find({})]
+
     def reset_state(self, tg_id):
         self.set_current_state(tg_id,
                                State.FIRST_INTERACTION)
@@ -69,7 +72,7 @@ class UsersDb:
                               upsert=True)
 
     def is_admin(self, tg_id):
-        return tg_id in ADMIN_IDS
+        return int(tg_id) in ADMIN_IDS
 
     def get_current_application(self, tg_id) -> Application:
         obj = self.users.find_one({"tg_id": tg_id})

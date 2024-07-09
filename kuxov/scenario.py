@@ -6,6 +6,7 @@ SCENARIO = [
 ]
 
 ADMIN_IDS = [
+    111111111,
 
 ]
 

@@ -14,6 +14,8 @@ class State(Enum):
     MAIN_MENU = "main_menu"
     LIST_MENU = "list_menu"
 
+    SEND_ALL = "send_all"
+
 
 class EnterMode(Enum):
     FILLING = "filling"

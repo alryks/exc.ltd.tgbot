@@ -3,7 +3,8 @@ from parse import parse
 from telebot import TeleBot, types
 from kuxov.application import Application
 from kuxov.scenario import BOT_TOKEN
-from kuxov.assets import FIRST_INTERACTION_MESSAGE, ENTER_NAME_MESSAGE, ENTER_PHONE_MESSAGE, ENTER_AGE_MESSAGE, \
+from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FAIL_MESSAGE, create_send_all_markup, \
+    FIRST_INTERACTION_MESSAGE, ENTER_NAME_MESSAGE, ENTER_PHONE_MESSAGE, ENTER_AGE_MESSAGE, \
     ENTER_RESIDENCE_MESSAGE, ENTER_PHOTO_MESSAGE, NameNotFoundException, PhoneNotFoundException, AgeNotFoundException, \
     ResidenceNotFoundException, PassportNotFoundException, APPLICATION_DELETE_MESSAGE, APPLICATION_SAVE_MESSAGE, \
     ResidenceReplyMarkup, WELCOME_MESSAGE, NoMarkup, GenderNotFoundException, ENTER_GENDER_MESSAGE, GenderReplyMarkup, \
@@ -27,6 +28,31 @@ def welcome(message: types.Message):
     db.set_current_state(tg_id, State.MAIN_MENU)
     bot.reply_to(message, WELCOME_MESSAGE,
                  reply_markup=create_commands_markup())
+
+
+@bot.message_handler(func=lambda message: db.is_admin(message.from_user.id),
+                     commands=['sendall'],)
+@alert
+def start_send_all(message: types.Message):
+    tg_id = message.from_user.id
+    db.set_current_state(tg_id, State.SEND_ALL)
+    bot.reply_to(message, SEND_ALL_MESSAGE, reply_markup=create_send_all_markup())
+
+
+@bot.message_handler(func=lambda message: db.get_current_state(message.from_user.id) == State.SEND_ALL and db.is_admin(message.from_user.id),
+                     content_types=['audio', 'photo', 'voice', 'video', 'document', 'text', 'location', 'contact', 'sticker'])
+@alert
+def send_all(message: types.Message):
+    if message.text == "Отмена":
+        return welcome(message)
+    user_ids = db.get_all_user_ids()
+    for user_id in user_ids:
+        try:
+            bot.copy_message(user_id, message.chat.id, message.message_id)
+            bot.reply_to(message, SEND_ALL_SUCCESS_MESSAGE)
+        except:
+            bot.reply_to(message, SEND_ALL_FAIL_MESSAGE)
+    return welcome(message)
 
 
 @bot.message_handler(func=lambda message: message.text == "Новая анкета")
@@ -101,7 +127,7 @@ def send_welcome(message: types.Message):
     print(application)
 
     if state == State.FIRST_INTERACTION:
-        access = "user"
+        access = "user" if not db.is_admin(tg_id) else "admin"
         bot.reply_to(message,
                      FIRST_INTERACTION_MESSAGE.format(access=access))
         bot.send_message(tg_id,

@@ -4,9 +4,20 @@ import os.path
 from telebot import types
 
 
+SEND_ALL_MESSAGE = """
+Отправьте сообщение, которое хотите отправить всем.
+"""
+
+SEND_ALL_SUCCESS_MESSAGE = """
+Сообщение отправлено всем.
+"""
+
+SEND_ALL_FAIL_MESSAGE = """
+Не удалось отправить сообщение всем.
+"""
+
 WELCOME_MESSAGE = """
 Здравствуйте, это тестовый бот ввода информации о кандидатах.
-Создал в системе новую анкету.
 """
 
 FIRST_INTERACTION_MESSAGE = """
@@ -60,6 +71,11 @@ DONT_UNDERSTOOD_MESSAGE = """
 Не понял вас.
 """
 
+
+def create_send_all_markup():
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.row(types.KeyboardButton("Отмена"))
+    return markup
 
 def create_redidence_markup(countries):
     markup = types.ReplyKeyboardMarkup()

@@ -9,7 +9,7 @@ from .utils import CustomJSONEncoder
 
 def create_app():
     app = Flask("Kuxov")
-    app.json_encoder = CustomJSONEncoder
+    app.json = CustomJSONEncoder(app)
     app.config['JSON_AS_ASCII'] = False
     # app.config["SECRET_KEY"] = SECRET
     Swagger(app)

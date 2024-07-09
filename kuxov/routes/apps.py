@@ -93,7 +93,7 @@ def add_apps_endpoints(app):
         ("apps", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_APPS}),
     ])
     def mark_apps():
-        apps = json.loads(request.json['apps'])
+        apps = request.json["apps"]
         for i, app in enumerate(apps):
             if "application_id" not in app:
                 return jsonify({"status": ERROR,

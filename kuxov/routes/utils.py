@@ -1,4 +1,4 @@
-import json
+from flask.json.provider import DefaultJSONProvider
 import sys
 from datetime import datetime
 import uuid
@@ -8,7 +8,7 @@ from bson import ObjectId
 from flask import request, jsonify, Response
 
 
-class CustomJSONEncoder(json.JSONEncoder):
+class CustomJSONEncoder(DefaultJSONProvider):
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
@@ -16,7 +16,7 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, ObjectId):
             return str(obj)
-        return json.JSONEncoder.default(self, obj)
+        return DefaultJSONProvider.default(obj)
 
 
 def check_missing_keys(keys_and_errors,
