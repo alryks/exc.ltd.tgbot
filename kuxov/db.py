@@ -8,7 +8,7 @@ from .scenario import ADMIN_IDS
 
 
 class UsersDb:
-    kuxov = db.users
+    users = db.users
 
     def __init__(self):
         super(UsersDb, self).__init__()
@@ -21,14 +21,14 @@ class UsersDb:
         self.get_current_application(tg_id).reset()
 
     def get_current_state(self, tg_id):
-        user = self.kuxov.find_one({"tg_id": tg_id})
+        user = self.users.find_one({"tg_id": tg_id})
         if user is None:
             return State.FIRST_INTERACTION
         state = user.get("state", State.FIRST_INTERACTION)
         return State(state)
 
     def get_entering_mode(self, tg_id):
-        user = self.kuxov.find_one({"tg_id": tg_id})
+        user = self.users.find_one({"tg_id": tg_id})
         if user is None:
             return EnterMode.FILLING, None
         mode = user.get("mode", EnterMode.FILLING)
@@ -36,26 +36,26 @@ class UsersDb:
 
     def set_current_state(self, tg_id,
                           state: State):
-        self.kuxov.update_one({"tg_id": tg_id},
+        self.users.update_one({"tg_id": tg_id},
                               {"$set": {"state": state.value}},
                               upsert=True)
 
     def set_entering_mode(self, tg_id,
                           mode: EnterMode,
                           edit_message_id=None):
-        self.kuxov.update_one({"tg_id": tg_id},
+        self.users.update_one({"tg_id": tg_id},
                               {"$set": {"mode": mode.value,
                                         "edit_message_id": edit_message_id}},
                               upsert=True)
 
     def delete_message_after(self, tg_id, *message_ids):
         message_ids = list(message_ids)
-        self.kuxov.update_one({"tg_id": tg_id},
+        self.users.update_one({"tg_id": tg_id},
                               {"$push": {"delete_message_ids": {"$each": message_ids}}},
                               upsert=True)
 
     def delete_messages(self, bot, tg_id):
-        obj = self.kuxov.find_one({"tg_id": tg_id})
+        obj = self.users.find_one({"tg_id": tg_id})
         if obj is None:
             return
         for message_id in obj.get("delete_message_ids", []):
@@ -64,7 +64,7 @@ class UsersDb:
                                    message_id=message_id)
             except:
                 pass
-        self.kuxov.update_one({"tg_id": tg_id},
+        self.users.update_one({"tg_id": tg_id},
                               {"$set": {"delete_message_ids": []}},
                               upsert=True)
 
@@ -72,7 +72,7 @@ class UsersDb:
         return tg_id in ADMIN_IDS
 
     def get_current_application(self, tg_id) -> Application:
-        obj = self.kuxov.find_one({"tg_id": tg_id})
+        obj = self.users.find_one({"tg_id": tg_id})
         if obj is None:
             raise RuntimeError("Can't find user")
         if 'application_id' not in obj:
@@ -87,12 +87,12 @@ class UsersDb:
 
     def set_current_application(self, tg_id,
                                 application_id):
-        self.kuxov.update_one({"tg_id": tg_id},
+        self.users.update_one({"tg_id": tg_id},
                               {"$set": {"application_id": ObjectId(application_id)}},
                               upsert=True)
 
     def unset_current_application(self, tg_id):
-        self.kuxov.update_one({"tg_id": tg_id},
+        self.users.update_one({"tg_id": tg_id},
                               {"$unset": {"application_id": ""}},
                               upsert=True)
 

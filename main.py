@@ -1,5 +1,3 @@
-import io
-from PIL import Image
 from bson import ObjectId
 from parse import parse
 from telebot import TeleBot, types
@@ -22,8 +20,8 @@ access_db = AccessDb()
 
 @bot.message_handler(commands=['start'],)
 @bot.message_handler(func=lambda message: message.text == "В главное меню")
-@exception_handler(bot, db)
 @alert
+@exception_handler(bot, db)
 def welcome(message: types.Message):
     tg_id = message.from_user.id
     db.set_current_state(tg_id, State.MAIN_MENU)
@@ -32,8 +30,8 @@ def welcome(message: types.Message):
 
 
 @bot.message_handler(func=lambda message: message.text == "Новая анкета")
-@exception_handler(bot, db)
 @alert
+@exception_handler(bot, db)
 def reset(message: types.Message):
     tg_id = message.from_user.id
     db.reset_state(tg_id)
@@ -58,8 +56,8 @@ def reset(message: types.Message):
                                                           "Новые анкеты",
                                                           "Принятые анкеты",
                                                           "Отклоненные анкеты"]))
-@exception_handler(bot, db)
 @alert
+@exception_handler(bot, db)
 def list_welcome(message: types.Message):
     tg_id = message.from_user.id
     db.set_current_state(tg_id, State.LIST_MENU)
@@ -92,8 +90,8 @@ def list_welcome(message: types.Message):
 
 @bot.message_handler(func=lambda message: True,
                      content_types=["text", "photo"])
-@exception_handler(bot, db)
 @alert
+@exception_handler(bot, db)
 def send_welcome(message: types.Message):
     tg_id = message.from_user.id
     db.delete_messages(bot, tg_id)
