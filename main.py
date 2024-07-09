@@ -46,12 +46,12 @@ def send_all(message: types.Message):
     if message.text == "Отмена":
         return welcome(message)
     user_ids = db.get_all_user_ids()
-    for user_id in user_ids:
-        try:
+    try:
+        for user_id in user_ids:
             bot.copy_message(user_id, message.chat.id, message.message_id)
-            bot.reply_to(message, SEND_ALL_SUCCESS_MESSAGE)
-        except:
-            bot.reply_to(message, SEND_ALL_FAIL_MESSAGE)
+        bot.reply_to(message, SEND_ALL_SUCCESS_MESSAGE)
+    except:
+        bot.reply_to(message, SEND_ALL_FAIL_MESSAGE)
     return welcome(message)
 
 
@@ -111,7 +111,7 @@ def list_welcome(message: types.Message):
 
     bot.send_message(tg_id,
                      "Какие анкеты интересуют ?",
-                     reply_markup=create_list_commands_markup())
+                     reply_markup=create_list_commands_markup(tg_id))
 
 
 @bot.message_handler(func=lambda message: True,
@@ -124,7 +124,6 @@ def send_welcome(message: types.Message):
     state = db.get_current_state(tg_id=tg_id)
     mode, edit_message_id = db.get_entering_mode(tg_id)
     application = db.get_current_application(tg_id)
-    print(application)
 
     if state == State.FIRST_INTERACTION:
         access = "user" if not db.is_admin(tg_id) else "admin"
@@ -315,6 +314,7 @@ def handle_clicks(call: types.CallbackQuery):
     tg_id = call.from_user.id
     if call.data.startswith("appedit_"):
         application = Application(ObjectId(call.data.split("appedit_")[1]))
+        application.reset_status()
         db.set_current_application(tg_id=tg_id, application_id=application.id)
         application.send_to(bot,
                             call.message.chat.id)

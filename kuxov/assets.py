@@ -82,6 +82,7 @@ def create_redidence_markup(countries):
     for country in countries:
         button = types.KeyboardButton(country)
         markup.row(button)
+    markup.row(types.KeyboardButton("В главное меню"))
     return markup
 
 
@@ -97,6 +98,7 @@ def create_gender_markup(genders):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(*[types.KeyboardButton(gender)
                  for gender in genders])
+    markup.row(types.KeyboardButton("В главное меню"))
     return markup
 
 
@@ -113,14 +115,14 @@ def create_commands_markup():
     return markup
 
 
-def create_list_commands_markup():
+def create_list_commands_markup(tg_id):
     from .application import Application
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.row(types.KeyboardButton(f"Все анкеты ({Application.count_apps()})"),
-               types.KeyboardButton(f"Новые анкеты ({Application.count_new_apps()})"), )
-    markup.row(types.KeyboardButton(f"Принятые анкеты ({Application.count_accepted_apps()})"),
-               types.KeyboardButton(f"Отклоненные анкеты ({Application.count_declined_apps()})"),)
+    markup.row(types.KeyboardButton(f"Все анкеты ({Application.count_apps(tg_id)})"),
+               types.KeyboardButton(f"Новые анкеты ({Application.count_new_apps(tg_id)})"), )
+    markup.row(types.KeyboardButton(f"Принятые анкеты ({Application.count_accepted_apps(tg_id)})"),
+               types.KeyboardButton(f"Отклоненные анкеты ({Application.count_declined_apps(tg_id)})"),)
     markup.row(types.KeyboardButton("В главное меню"))
     return markup
 
@@ -197,6 +199,7 @@ def create_jobs_markup(access_db, tg_id,
     button_prev = types.KeyboardButton(f"Предыдущие [<={first_key}]")
     button_next = types.KeyboardButton(f"Следующие [>={last_key}]")
     markup.row(button_prev, button_next)
+    markup.row(types.KeyboardButton("В главное меню"))
     print(f"JOBS NUM: {len(jobs_list)}")
     return markup
 
@@ -204,6 +207,7 @@ def create_jobs_markup(access_db, tg_id,
 def create_another_document_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(types.KeyboardButton("Закончить ввод фото"))
+    markup.row(types.KeyboardButton("В главное меню"))
     return markup
 
 

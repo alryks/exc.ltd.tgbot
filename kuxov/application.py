@@ -282,9 +282,12 @@ class Application(object):
 
     @classmethod
     def list(cls, user_id=None):
+        dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
         return [Application(obj['_id'],
                             data=obj)
-                for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True}})]
+                for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True},
+                                                  "$or": [{"_id": {"$gt": dt}},
+                                                          {"status": {"$ne": Status.ACCEPTED.value}}]})]
 
     @classmethod
     def list_not_accepted(cls, user_id=None):
@@ -400,6 +403,13 @@ class Application(object):
                                                             return_document=ReturnDocument.AFTER)
         return self
 
+    def reset_status(self):
+        self.__data = self.applications.find_one_and_update({"_id": self._id},
+                                                            {"$unset": {"status": 1,
+                                                                      "reason": 1}},
+                                                            return_document=ReturnDocument.AFTER)
+        return self
+
     @property
     def status(self):
         status = self.data.get("status")
@@ -408,21 +418,26 @@ class Application(object):
         return status
 
     @classmethod
-    def count_apps(cls):
-        return cls.applications.count_documents({})
+    def count_apps(cls, user_id=None):
+        return cls.applications.count_documents({
+            **{"user_id": user_id if user_id is not None else {"$exists": True}}
+        })
 
     @classmethod
-    def count_accepted_apps(cls):
+    def count_accepted_apps(cls, user_id=None):
         dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
         return cls.applications.count_documents({"status": Status.ACCEPTED.value,
-                                                 "_id": {"$gt": dt}})
+                                                 "_id": {"$gt": dt},
+                                                 **{"user_id": user_id if user_id is not None else {"$exists": True}}})
 
     @classmethod
-    def count_declined_apps(cls):
-        return cls.applications.count_documents({"status": Status.DECLINED.value})
+    def count_declined_apps(cls, user_id=None):
+        return cls.applications.count_documents({"status": Status.DECLINED.value,
+                                                 **{"user_id": user_id if user_id is not None else {"$exists": True}}})
 
     @classmethod
-    def count_new_apps(cls):
+    def count_new_apps(cls, user_id=None):
         return cls.applications.count_documents({"status": {"$exists": False},
+                                                 **{"user_id": user_id if user_id is not None else {"$exists": True}},
                                                  **{main_field: {"$exists": True}
                                                     for main_field in Application.MAIN_FIELDS}})
