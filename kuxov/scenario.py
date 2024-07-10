@@ -20,7 +20,7 @@ MONGO_PASSWORD = ""
 
 MONGO_HOST = f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@localhost:27017/"
 client = MongoClient(MONGO_HOST)
-db: Database = client.TelegramBot
+db: Database = client.SNPBot
 
 CDN_ENDPOINT = "https://storage.yandexcloud.net"
 CDN_ACCESS_KEY_ID = ""
