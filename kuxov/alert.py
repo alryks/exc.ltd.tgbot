@@ -1,9 +1,9 @@
 import traceback
 
-from .scenario import ALERT_ID, ALERT_TOKEN
+from .scenario import ALERT_ID, BOT_TOKEN
 import telebot
 
-bot = telebot.TeleBot(ALERT_TOKEN, parse_mode="HTML")
+bot = telebot.TeleBot(BOT_TOKEN, parse_mode="HTML")
 
 
 def alert(func):

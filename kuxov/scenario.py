@@ -10,7 +10,6 @@ ADMIN_IDS = [
 
 ]
 
-ALERT_TOKEN = ""
 ALERT_ID = 111111111
 
 BOT_TOKEN = ""
