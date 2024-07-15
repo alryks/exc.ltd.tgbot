@@ -338,7 +338,7 @@ def handle_clicks(call: types.CallbackQuery):
 
     application: Application = db.get_current_application(call.from_user.id)
     if call.data == "edit_passport":
-        application.del_passport_photos()
+        application.delete_passport()
         db.delete_message_after(call.from_user.id,
                                 bot.send_message(call.from_user.id,
                                                  ENTER_PHOTO_MESSAGE).message_id)

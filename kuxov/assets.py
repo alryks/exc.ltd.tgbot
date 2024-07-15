@@ -139,7 +139,7 @@ def get_jobs_list():
     else:
         jobs_list = JOBS_LIST
     jobs_list = sorted(jobs_list,
-                       key=lambda x: x['объект'])
+                       key=lambda x: x['объект'].lower())
     return jobs_list
 
 
@@ -173,6 +173,8 @@ def create_jobs_markup(access_db, tg_id,
                        start_letter='',
                        gte_letter='а',
                        lte_letter='я'):
+    max_jobs = 25
+
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     jobs_list = get_jobs_list()
     jobs_list = access_db.filter_jobs(tg_id, jobs_list)
@@ -181,31 +183,33 @@ def create_jobs_markup(access_db, tg_id,
                  if job['объект'].lower().startswith(start_letter.lower())
                  and (job['объект'].lower()[:len(gte_letter)] >= gte_letter)
                  and (job['объект'].lower()[:len(lte_letter)] <= lte_letter)]
-    if len(jobs_list) == 0:
-        return markup
-
-    button = types.KeyboardButton(f"В начало")
-    markup.row(button)
-    if lte_letter == 'я':
-        first_key = jobs_list[:25][0]['объект'].lower()[:2]
-        last_key = jobs_list[:25][-1]['объект'].lower()[:2]
-        for job in jobs_list[:25]:
-            key = f"{job['объект']}|{job['должность']}|{job['пол']}"
-            button = types.KeyboardButton(key)
-            markup.row(button)
-    else:
-        first_key = jobs_list[-25:][0]['объект'].lower()[:2]
-        last_key = jobs_list[-25:][-1]['объект'].lower()[:2]
-        for job in jobs_list[-25:]:
-            key = f"{job['объект']}|{job['должность']}|{job['пол']}"
-            button = types.KeyboardButton(key)
-            markup.row(button)
-
-    button_prev = types.KeyboardButton(f"Предыдущие [<={first_key}]")
-    button_next = types.KeyboardButton(f"Следующие [>={last_key}]")
-    markup.row(button_prev, button_next)
-    markup.row(types.KeyboardButton("В главное меню"))
     print(f"JOBS NUM: {len(jobs_list)}")
+    if jobs_list:
+        button = types.KeyboardButton(f"В начало")
+        markup.row(button)
+
+        jobs_list = jobs_list[slice(0, max_jobs)]
+        if jobs_list:
+            if lte_letter == 'я':
+                first_key = jobs_list[0]['объект'].lower()[:2]
+                last_key = jobs_list[-1]['объект'].lower()[:2]
+                for job in jobs_list:
+                    key = f"{job['объект']}|{job['должность']}|{job['пол']}"
+                    button = types.KeyboardButton(key)
+                    markup.row(button)
+            else:
+                first_key = jobs_list[0]['объект'].lower()[:2]
+                last_key = jobs_list[-1]['объект'].lower()[:2]
+                for job in jobs_list:
+                    key = f"{job['объект']}|{job['должность']}|{job['пол']}"
+                    button = types.KeyboardButton(key)
+                    markup.row(button)
+
+            button_prev = types.KeyboardButton(f"Предыдущие [<={first_key}]")
+            button_next = types.KeyboardButton(f"Следующие [>={last_key}]")
+            markup.row(button_prev, button_next)
+
+    markup.row(types.KeyboardButton("В главное меню"))
     return markup
 
 

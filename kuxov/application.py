@@ -15,6 +15,9 @@ from .scenario import db
 from bson import ObjectId
 import phonenumbers
 from PIL import Image
+import tempfile
+import os
+from pathlib import Path
 from pymongo.collection import Collection, ReturnDocument
 
 from .state import Status
@@ -65,13 +68,13 @@ class Application(object):
         })
 
     def delete(self):
-        self.del_passport_photos()
+        self.delete_passport()
         self.applications.delete_one({"_id": self._id})
         self.__data = None
         return None
 
     def reset(self):
-        self.del_passport_photos()
+        self.delete_passport()
         self.__data = self.applications.find_one_and_update({"_id": self._id},
                                                             {"$unset": {f: ""
                                                                                 for f in self.FIELDS}},
@@ -275,14 +278,18 @@ class Application(object):
                 return gender
         raise GenderNotFoundException()
 
-    def del_passport_photos(self):
+    def delete_passport(self):
         if self.data is None:
             return
-        photo_ids = self.data.get('photo_ids', [])
-        for photo_id in photo_ids:
-            self.cdn.delete(photo_id)
+        self.cdn.delete(*self.photo_ids)
+        pdf_id = self.data.get("photo_pdf")
+        if pdf_id is not None:
+            self.cdn.delete(pdf_id, ext="pdf")
+            self.data["photo_pdf"] = None
         self.applications.update_one({"_id": self._id},
-                                     {"$set": {"photo_ids": []}})
+                                     {
+                                         "$set": {"photo_ids": []},
+                                         "$unset": {"photo_pdf": 1}})
 
     def add_passport_photo(self, photo: Image.Image = None,
                            photo_content: bytes = None):
@@ -308,6 +315,32 @@ class Application(object):
     @property
     def photo_ids(self):
         return self.data.get('photo_ids', [])
+
+    def add_passport_pdf(self):
+        photos = [
+            self.cdn.retrieve_photo(photo_id) for
+            photo_id in self.photo_ids
+        ]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            pdf_path = os.path.join(temp_dir, "passport.pdf")
+            if len(photos) > 1:
+                photos[0].save(pdf_path, format="PDF", save_all=True,
+                               append_images=photos[1:])
+            else:
+                photos[0].save(pdf_path, format="PDF")
+            pdf_id = self.cdn.host(Path(pdf_path), ext="pdf")
+            self.applications.update_one({"_id": self._id},
+                                            {"$set": {"photo_pdf": pdf_id}})
+            self.data["photo_pdf"] = pdf_id
+
+    @property
+    def passport_pdf(self):
+        pdf_id = self.data.get("photo_pdf")
+        if pdf_id is None:
+            self.add_passport_pdf()
+            pdf_id = self.data.get("photo_pdf")
+        return self.cdn.retrieve_pdf(pdf_id)
 
     @classmethod
     def list(cls, user_id=None):
@@ -367,12 +400,11 @@ class Application(object):
 Дата прибытия на объект: {self.date_on_object.strftime('%d.%m.%Y')}
 Резиденство: {self.residence}
 Ко-во документов: {len(self.photo_ids)}
-Документы:\n{urls}
         """
-        bot.send_photo(chat_id,
-                       photo=self.cdn.retrieve_content(self.photo_ids[0]),
-                       caption=caption,
-                       reply_markup=markup)
+        bot.send_document(chat_id,
+                          types.InputFile(self.passport_pdf, "passport.pdf"),
+                          caption=caption,
+                          reply_markup=markup)
 
     def send_to(self, bot: telebot.TeleBot, chat_id,
                 edit_message_id=None):
@@ -399,20 +431,19 @@ class Application(object):
 Дата прибытия на объект: {self.date_on_object.strftime('%d.%m.%Y')}
 Резиденство: {self.residence}
 Ко-во документов: {len(self.photo_ids)}
-Документы:\n{urls}
 """
         bot.delete_message(chat_id,
                            bot.send_message(chat_id, "Создание меню...",
                                             reply_markup=NoMarkup).message_id)
         if edit_message_id is None:
-            bot.send_photo(chat_id,
-                           photo=self.cdn.retrieve_content(self.photo_ids[0]),
-                           caption=caption,
-                           reply_markup=markup)
+            bot.send_document(chat_id,
+                              types.InputFile(self.passport_pdf, "passport.pdf"),
+                              caption=caption,
+                              reply_markup=markup)
         else:
             bot.edit_message_media(chat_id=chat_id,
                                    message_id=edit_message_id,
-                                   media=types.InputMediaPhoto(self.cdn.retrieve_content(self.photo_ids[0])))
+                                   media=types.InputMediaDocument(types.InputFile(self.passport_pdf, "passport.pdf")))
             bot.edit_message_caption(chat_id=chat_id,
                                      caption=caption,
                                      message_id=edit_message_id,

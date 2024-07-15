@@ -22,7 +22,7 @@ class UsersDb:
         self.set_entering_mode(tg_id,
                                EnterMode.FILLING)
         application = self.get_current_application(tg_id)
-        if application.data.get('submitted'):
+        if application.data is None or application.data.get('submitted'):
             self.set_current_application(tg_id, Application.new().id)
         else:
             self.get_current_application(tg_id).reset()

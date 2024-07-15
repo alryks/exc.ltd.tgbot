@@ -28,6 +28,7 @@ class CDN(object):
         print("Using CDN.")
         print(f"Using {CDN_BUCKET}.")
         self.bucket = self.s3.Bucket(CDN_BUCKET)
+        self.bucket.objects
         self.endpoint_url = CDN_ENDPOINT
         self.public_url = public_url
 
@@ -41,33 +42,33 @@ class CDN(object):
         url = self.url_for(_id)
         return Image.open(io.BytesIO(requests.get(url).content)).convert('RGB')
 
-    def retrieve_content(self, _id: ObjectId):
-        url = self.url_for(_id)
-        return requests.get(url).content
+    def retrieve_pdf(self, _id: ObjectId):
+        url = self.url_for(_id, ext="pdf")
+        return io.BytesIO(requests.get(url).content)
 
-    def host(self, path: Union[io.BufferedReader, Path]):
+    def host(self, path: Union[io.BufferedReader, Path], ext: str = "jpg"):
         _id = ObjectId()
         path = Path(path)
         with path.open("rb") as f:
-            self.bucket.put_object(Key=str(_id) + '.jpg',
+            self.bucket.put_object(Key=str(_id) + f'.{ext}',
                                    Body=f,
                                    ContentType='image/jpeg')
         return _id
 
-    def url_for(self, _id: ObjectId):
+    def url_for(self, _id: ObjectId, ext: str = "jpg"):
         _id = ObjectId(_id)
         return os.path.join(self.public_url,
-                            str(_id) + '.jpg')
+                            str(_id) + f'.{ext}')
 
     def list(self):
         return [ObjectId(obj.key)
                 for obj in self.bucket.objects.all()]
 
-    def delete(self, *_id: ObjectId):
+    def delete(self, *_id: ObjectId, ext: str = "jpg"):
         self.bucket.delete_objects(Delete={
             'Objects': [
                 {
-                    'Key': str(each_id) + '.jpg',
+                    'Key': str(each_id) + f'.{ext}',
                 }
                 for each_id in _id[:1000]
             ],
