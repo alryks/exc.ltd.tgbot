@@ -9,7 +9,8 @@ from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FA
     ResidenceNotFoundException, PassportNotFoundException, APPLICATION_DELETE_MESSAGE, APPLICATION_SAVE_MESSAGE, \
     ResidenceReplyMarkup, WELCOME_MESSAGE, NoMarkup, GenderNotFoundException, ENTER_GENDER_MESSAGE, GenderReplyMarkup, \
     create_jobs_markup, exception_handler, ENTER_JOBS_MESSAGE, AnotherDocumentReplyMarkup, create_commands_markup, \
-    create_list_commands_markup, DONT_UNDERSTOOD_MESSAGE, PassportNotEnoughException, INVALID_JOBS_LIST_MESSAGE
+    create_list_commands_markup, DONT_UNDERSTOOD_MESSAGE, PassportNotEnoughException, INVALID_JOBS_LIST_MESSAGE, \
+    ENTER_DATE_ON_OBJECT_MESSAGE
 from kuxov.db import UsersDb, AccessDb
 from kuxov.state import State, EnterMode
 from kuxov.alert import alert
@@ -239,6 +240,21 @@ def send_welcome(message: types.Message):
 
         if mode == EnterMode.FILLING:
             bot.send_message(message.chat.id,
+                             ENTER_DATE_ON_OBJECT_MESSAGE,
+                             reply_markup=NoMarkup)
+            db.set_current_state(message.chat.id, State.ENTER_DATE_ON_OBJECT)
+        elif mode == EnterMode.EDITING:
+            bot.delete_message(message.chat.id,
+                               message.message_id)
+            application.send_to(bot, message.chat.id,
+                                edit_message_id=edit_message_id)
+            db.set_entering_mode(message.chat.id, EnterMode.FILLING)
+    elif state == State.ENTER_DATE_ON_OBJECT:
+        date_on_object = application.extract_date_on_object(message.text)
+        application.set_date_on_object(date_on_object)
+
+        if mode == EnterMode.FILLING:
+            bot.send_message(message.chat.id,
                              ENTER_RESIDENCE_MESSAGE,
                              reply_markup=ResidenceReplyMarkup)
             db.set_current_state(message.chat.id, State.ENTER_RESIDENCE)
@@ -353,6 +369,12 @@ def handle_clicks(call: types.CallbackQuery):
         db.set_current_state(call.from_user.id, State.ENTER_AGE)
         db.set_entering_mode(call.from_user.id, EnterMode.EDITING,
                              edit_message_id=call.message.message_id)
+    elif call.data == "edit_date_on_object":
+        db.delete_message_after(call.from_user.id,
+                                bot.send_message(call.from_user.id, ENTER_DATE_ON_OBJECT_MESSAGE).message_id)
+        db.set_current_state(call.from_user.id, State.ENTER_DATE_ON_OBJECT)
+        db.set_entering_mode(call.from_user.id, EnterMode.EDITING,
+                             edit_message_id=call.message.message_id)
     elif call.data == "edit_job":
         db.delete_message_after(call.from_user.id,
                                 bot.send_message(call.from_user.id,
@@ -398,6 +420,13 @@ def handle_clicks(call: types.CallbackQuery):
                          reply_markup=create_commands_markup())
     else:
         raise NotImplementedError()
+
+
+@bot.message_handler(func=lambda message: True)
+@exception_handler(bot, db)
+def send_welcome_for_other(message: types.Message):
+    print(message)
+    return
 
 
 bot.infinity_polling()

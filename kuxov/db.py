@@ -21,7 +21,11 @@ class UsersDb:
                                State.FIRST_INTERACTION)
         self.set_entering_mode(tg_id,
                                EnterMode.FILLING)
-        self.get_current_application(tg_id).reset()
+        application = self.get_current_application(tg_id)
+        if application.data.get('submitted'):
+            self.set_current_application(tg_id, Application.new().id)
+        else:
+            self.get_current_application(tg_id).reset()
 
     def get_current_state(self, tg_id):
         user = self.users.find_one({"tg_id": tg_id})

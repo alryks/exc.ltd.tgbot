@@ -9,7 +9,7 @@ from telebot.util import quick_markup
 
 from .assets import NameNotFoundException, PhoneNotFoundException, AgeNotFoundException, COUNTRIES, \
     ResidenceNotFoundException, GENDERS, GenderNotFoundException, JOBS_LIST, JobNotFoundException, NoMarkup, \
-    get_jobs_list
+    get_jobs_list, DateOnObjectNotFoundException
 from .cdn import CDN
 from .scenario import db
 from bson import ObjectId
@@ -43,6 +43,7 @@ class Application(object):
         "gender",
         "phone",
         "age",
+        "date_on_object",
         "residence",
         "photo_ids",
     ]
@@ -83,6 +84,14 @@ class Application(object):
                                                                  "submitted": True,
                                                                  "user_id": tg_id
                                                              }},
+                                                            return_document=ReturnDocument.AFTER)
+        return self
+
+    def submit(self):
+        self.__data = self.applications.find_one_and_update({'_id': self._id},
+                                                            {"$set": {
+                                                                "submitted": True,
+                                                            }},
                                                             return_document=ReturnDocument.AFTER)
         return self
 
@@ -128,6 +137,10 @@ class Application(object):
     @property
     def age(self) -> datetime:
         return self.data.get("age")
+
+    @property
+    def date_on_object(self) -> datetime:
+        return self.data.get("date_on_object")
 
     @property
     def residence(self):
@@ -214,14 +227,30 @@ class Application(object):
                                                             return_document=ReturnDocument.AFTER)
         return self
 
+    def set_date_on_object(self, dt: datetime):
+        self.__data = self.applications.find_one_and_update({"_id": self._id},
+                                                            {"$set": {"date_on_object": dt}},
+                                                            return_document=ReturnDocument.AFTER)
+        return self
+
     @staticmethod
     def extract_age(text: str):
         text = text.strip()
         dt: datetime = ddp.get_date_data(text).date_obj
-        if dt.year == datetime.now().year:
-            raise AgeNotFoundException()
         if dt is None:
             raise AgeNotFoundException()
+        if dt.year == datetime.now().year:
+            raise AgeNotFoundException()
+        return dt
+
+    @staticmethod
+    def extract_date_on_object(text: str):
+        text = text.strip()
+        dt: datetime = ddp.get_date_data(text).date_obj
+        if dt is None:
+            raise DateOnObjectNotFoundException()
+        if dt < datetime.now():
+            raise DateOnObjectNotFoundException()
         return dt
 
     def set_residence(self, residence: str):
@@ -335,6 +364,7 @@ class Application(object):
 Пол: {self.gender}
 Телефон: {self.phone}
 Дата рождения: {self.age.strftime('%d.%m.%Y')} ({(datetime.now() - self.age).days // 365} лет)
+Дата прибытия на объект: {self.date_on_object.strftime('%d.%m.%Y')}
 Резиденство: {self.residence}
 Ко-во документов: {len(self.photo_ids)}
 Документы:\n{urls}
@@ -353,6 +383,7 @@ class Application(object):
             'Сменить тел': {'callback_data': "edit_phone"},
             'Сменить пол': {'callback_data': "edit_gender"},
             'Сменить возраст': {'callback_data': "edit_age"},
+            'Сменить дату прибытия': {'callback_data': "edit_date_on_object"},
             'Сменить резиденство': {'callback_data': "edit_residence"},
             'Заново добавить документы': {'callback_data': "edit_passport"},
             'Добавить документ': {'callback_data': "add_document"},
@@ -365,6 +396,7 @@ class Application(object):
 Пол: {self.gender}
 Телефон: {self.phone}
 Дата рождения: {self.age.strftime('%d.%m.%Y')} ({(datetime.now() - self.age).days // 365} лет)
+Дата прибытия на объект: {self.date_on_object.strftime('%d.%m.%Y')}
 Резиденство: {self.residence}
 Ко-во документов: {len(self.photo_ids)}
 Документы:\n{urls}
@@ -419,8 +451,11 @@ class Application(object):
 
     @classmethod
     def count_apps(cls, user_id=None):
+        dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
         return cls.applications.count_documents({
-            **{"user_id": user_id if user_id is not None else {"$exists": True}}
+            **{"user_id": user_id if user_id is not None else {"$exists": True}},
+            "$or": [{"status": {"$ne": Status.ACCEPTED.value,}},
+                    {"_id": {"$gt": dt},}],
         })
 
     @classmethod

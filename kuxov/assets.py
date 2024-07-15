@@ -51,6 +51,11 @@ ENTER_AGE_MESSAGE = """
 Введите дату рождения.
 """
 
+
+ENTER_DATE_ON_OBJECT_MESSAGE = """
+Введите дату прибытия на объект.
+"""
+
 ENTER_RESIDENCE_MESSAGE = """
 Введите гражданство.
 """
@@ -291,6 +296,14 @@ class PhoneNotFoundException(BadInformationException):
 
 class AgeNotFoundException(BadInformationException):
     MESSAGE = ("Не возможно распознать введенный возраст. "
+               "Проверьте информацию и повторите.")
+
+    def MARKUP(self):
+        return NoMarkup
+
+
+class DateOnObjectNotFoundException(BadInformationException):
+    MESSAGE = ("Не возможно распознать введенную дату. "
                "Проверьте информацию и повторите.")
 
     def MARKUP(self):
