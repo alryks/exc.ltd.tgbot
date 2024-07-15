@@ -282,18 +282,20 @@ class Application(object):
         if self.data is None:
             return
         self.cdn.delete(*self.photo_ids)
-        pdf_id = self.data.get("photo_pdf")
-        if pdf_id is not None:
-            self.cdn.delete(pdf_id, ext="pdf")
-            self.data["photo_pdf"] = None
+        self.del_passport_pdf()
         self.applications.update_one({"_id": self._id},
                                      {
                                          "$set": {"photo_ids": []},
                                          "$unset": {"photo_pdf": 1}})
 
+    def del_passport_pdf(self):
+        pdf_id = self.data.get("photo_pdf")
+        if pdf_id is not None:
+            self.cdn.delete(pdf_id, ext="pdf")
+            self.data["photo_pdf"] = None
+
     def add_passport_photo(self, photo: Image.Image = None,
                            photo_content: bytes = None):
-
         if photo is None:
             f = io.BytesIO(photo_content)
             photo = Image.open(f).convert('RGB')
@@ -317,6 +319,8 @@ class Application(object):
         return self.data.get('photo_ids', [])
 
     def add_passport_pdf(self):
+        self.del_passport_pdf()
+
         photos = [
             self.cdn.retrieve_photo(photo_id) for
             photo_id in self.photo_ids
@@ -336,10 +340,8 @@ class Application(object):
 
     @property
     def passport_pdf(self):
+        self.add_passport_pdf()
         pdf_id = self.data.get("photo_pdf")
-        if pdf_id is None:
-            self.add_passport_pdf()
-            pdf_id = self.data.get("photo_pdf")
         return self.cdn.retrieve_pdf(pdf_id)
 
     @classmethod
@@ -389,8 +391,6 @@ class Application(object):
             markup = quick_markup({
                 "Редактировать": {'callback_data': f"appedit_{self._id}"}
             }, row_width=1)
-
-        urls = '\n'.join(self.passport_files)
         caption = f"""
 Должность: {self.job['объект']}|{self.job['должность']}|{self.job['пол']}|от {self.job['возраст_от']} до {self.job['возраст_до']}
 ФИО: {self.name}
@@ -421,7 +421,6 @@ class Application(object):
             'Добавить документ': {'callback_data': "add_document"},
             'Сменить вакансию': {'callback_data': "edit_job"},
         }, row_width=2)
-        urls = '\n'.join(self.passport_files)
         caption = f"""
 Должность: {self.job['объект']}|{self.job['должность']}|{self.job['пол']}|от {self.job['возраст_от']} до {self.job['возраст_до']}
 ФИО: {self.name}

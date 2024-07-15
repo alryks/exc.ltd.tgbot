@@ -328,6 +328,7 @@ def send_welcome(message: types.Message):
 @alert
 def handle_clicks(call: types.CallbackQuery):
     tg_id = call.from_user.id
+    # bot.delete_message(tg_id, call.message.message_id)
     if call.data.startswith("appedit_"):
         application = Application(ObjectId(call.data.split("appedit_")[1]))
         application.reset_status()
