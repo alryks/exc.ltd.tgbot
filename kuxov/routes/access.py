@@ -27,7 +27,7 @@ def add_access_endpoints(app):
     ])
     def grant_access():
         try:
-            accesses = json.loads(request.json["accesses"])
+            accesses = request.json["accesses"]
         except:
             return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES})
 
@@ -60,7 +60,7 @@ def add_access_endpoints(app):
     ])
     def deny_access():
         try:
-            accesses = json.loads(request.json["accesses"])
+            accesses = request.json["accesses"]
         except:
             return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES})
 
