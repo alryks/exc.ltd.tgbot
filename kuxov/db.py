@@ -133,9 +133,9 @@ class AccessDb:
         tg_id = int(tg_id)
         obj = self.access.find_one({"tg_id": tg_id})
         if obj is None:
-            return ["all"]
+            return []
         else:
-            return obj.get("access_list", ["all"])
+            return obj.get("access_list", [])
 
     def filter_jobs(self, tg_id, jobs_list):
         access_list = self.get_access_list(tg_id)
