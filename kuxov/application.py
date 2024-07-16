@@ -340,8 +340,10 @@ class Application(object):
 
     @property
     def passport_pdf(self):
-        self.add_passport_pdf()
         pdf_id = self.data.get("photo_pdf")
+        if pdf_id is None:
+            self.add_passport_pdf()
+            pdf_id = self.data.get("photo_pdf")
         return self.cdn.retrieve_pdf(pdf_id)
 
     @classmethod

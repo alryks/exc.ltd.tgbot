@@ -303,6 +303,7 @@ def send_welcome(message: types.Message):
             elif mode == EnterMode.EDITING:
                 bot.delete_message(message.chat.id,
                                    message.message_id)
+                application.add_passport_pdf()
                 application.send_to(bot, message.chat.id,
                                     edit_message_id=edit_message_id)
                 db.set_entering_mode(message.chat.id,
