@@ -170,7 +170,7 @@ def create_prefix_jobs_markup(access_db, tg_id,
 
 
 def create_jobs_markup(access_db, tg_id,
-                       start_letter='',
+                       substring='',
                        gte_letter='а',
                        lte_letter='я'):
     max_jobs = 25
@@ -180,7 +180,7 @@ def create_jobs_markup(access_db, tg_id,
     jobs_list = access_db.filter_jobs(tg_id, jobs_list)
     jobs_list = [job
                  for job in jobs_list
-                 if job['объект'].lower().startswith(start_letter.lower())
+                 if substring.lower() in job['объект'].lower()
                  and (job['объект'].lower()[:len(gte_letter)] >= gte_letter)
                  and (job['объект'].lower()[:len(lte_letter)] <= lte_letter)]
     print(f"JOBS NUM: {len(jobs_list)}")
@@ -279,7 +279,7 @@ class JobNotFoundException(BadInformationException):
     def MARKUP(self):
         return create_jobs_markup(access_db=self.access_db,
                                   tg_id=self.tg_id,
-                                  start_letter=self.text.lower())
+                                  substring=self.text.lower())
 
 
 class GenderNotFoundException(BadInformationException):

@@ -387,22 +387,26 @@ class Application(object):
                                                   **{main_field: {"$exists": True}
                                                      for main_field in Application.MAIN_FIELDS}})]
 
+    def create_caption(self):
+        caption = f"""
+*Должность:* {self.job['объект']}|{self.job['должность']}|{self.job['пол']}|от {self.job['возраст_от']} до {self.job['возраст_до']}
+*ФИО:* {self.name}
+*Пол:* {self.gender}
+*Телефон:* {self.phone}
+*Дата рождения:* {self.age.strftime('%d.%m.%Y')} ({(datetime.now() - self.age).days // 365} лет)
+*Дата прибытия на объект:* {self.date_on_object.strftime('%d.%m.%Y')}
+*Резиденство:* {self.residence}
+*Кол-во документов:* {len(self.photo_ids)} шт.
+        """
+        return caption
+
     def present_to(self, bot: telebot.TeleBot, chat_id):
         markup = None
         if self.status != Status.ACCEPTED:
             markup = quick_markup({
                 "Редактировать": {'callback_data': f"appedit_{self._id}"}
             }, row_width=1)
-        caption = f"""
-Должность: {self.job['объект']}|{self.job['должность']}|{self.job['пол']}|от {self.job['возраст_от']} до {self.job['возраст_до']}
-ФИО: {self.name}
-Пол: {self.gender}
-Телефон: {self.phone}
-Дата рождения: {self.age.strftime('%d.%m.%Y')} ({(datetime.now() - self.age).days // 365} лет)
-Дата прибытия на объект: {self.date_on_object.strftime('%d.%m.%Y')}
-Резиденство: {self.residence}
-Ко-во документов: {len(self.photo_ids)}
-        """
+        caption = self.create_caption()
         bot.send_document(chat_id,
                           types.InputFile(self.passport_pdf, "passport.pdf"),
                           caption=caption,
@@ -423,16 +427,7 @@ class Application(object):
             'Добавить документ': {'callback_data': "add_document"},
             'Сменить вакансию': {'callback_data': "edit_job"},
         }, row_width=2)
-        caption = f"""
-Должность: {self.job['объект']}|{self.job['должность']}|{self.job['пол']}|от {self.job['возраст_от']} до {self.job['возраст_до']}
-ФИО: {self.name}
-Пол: {self.gender}
-Телефон: {self.phone}
-Дата рождения: {self.age.strftime('%d.%m.%Y')} ({(datetime.now() - self.age).days // 365} лет)
-Дата прибытия на объект: {self.date_on_object.strftime('%d.%m.%Y')}
-Резиденство: {self.residence}
-Ко-во документов: {len(self.photo_ids)}
-"""
+        caption = self.create_caption()
         bot.delete_message(chat_id,
                            bot.send_message(chat_id, "Создание меню...",
                                             reply_markup=NoMarkup).message_id)

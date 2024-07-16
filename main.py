@@ -15,7 +15,7 @@ from kuxov.db import UsersDb, AccessDb
 from kuxov.state import State, EnterMode
 from kuxov.alert import alert
 
-bot = TeleBot(token=BOT_TOKEN)
+bot = TeleBot(token=BOT_TOKEN, parse_mode="Markdown")
 db = UsersDb()
 access_db = AccessDb()
 
