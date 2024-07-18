@@ -1,3 +1,5 @@
+from telebot import TeleBot
+
 from pymongo import MongoClient
 from pymongo.database import Database
 
@@ -10,9 +12,10 @@ ADMIN_IDS = [
 
 ]
 
-ALERT_ID = 111111111
+DECLINE_ID = 111111111
 
 BOT_TOKEN = ""
+bot = TeleBot(token=BOT_TOKEN, parse_mode="Markdown")
 
 MONGO_USER = ""
 MONGO_PASSWORD = ""

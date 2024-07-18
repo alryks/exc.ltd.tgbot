@@ -1,5 +1,3 @@
-import json
-
 from flask import jsonify, request
 
 from .errors import OK, ERROR, MISSING_PARAMETER_ERROR_TG_ID, BAD_TG_ID_ERROR, MISSING_PARAMETER_ERROR_STATUS, \
@@ -37,43 +35,6 @@ def add_apps_endpoints(app):
         apps = Application.list_not_verified(user_id=tg_id)
         return jsonify([Application.remain_basic_job_fields(app.data)
                         for app in apps])
-
-    @app.route('/mark_app', methods=['POST'])
-    @describe(["apps"],
-              name="mark_app",
-              description="""Mark application accept/decline""",
-              inputs={
-                  "application_id": "_id from previous call",
-                  "status": "accepted | declined",
-                  "reason": "no reason"
-              },
-              outputs={
-                  "status": OK,
-              })
-    @check_missing_keys([
-        ("application_id", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_APPLICATION_ID}),
-        ("status", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_STATUS}),
-    ])
-    def mark_app():
-        application_id = request.json["application_id"]
-        try:
-            application = Application(application_id)
-        except:
-            return jsonify({"status": ERROR, "status_code": BAD_APPLICATION_ID_ERROR})
-        try:
-            status = Status(request.json["status"])
-        except:
-            return jsonify({"status": ERROR, "status_code": BAD_STATUS_ERROR})
-
-        reason = str(request.json.get("reason", ""))
-        if status == Status.ACCEPTED:
-            application.accept(reason=reason)
-        elif status == Status.DECLINED:
-            application.decline(reason=reason)
-
-        return jsonify({
-            "status": OK
-        })
 
     @app.route('/mark_apps', methods=['POST'])
     @describe(["apps"],

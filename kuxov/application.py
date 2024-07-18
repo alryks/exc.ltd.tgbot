@@ -11,7 +11,7 @@ from .assets import NameNotFoundException, PhoneNotFoundException, AgeNotFoundEx
     ResidenceNotFoundException, GENDERS, GenderNotFoundException, JOBS_LIST, JobNotFoundException, NoMarkup, \
     get_jobs_list, DateOnObjectNotFoundException
 from .cdn import CDN
-from .scenario import db
+from .scenario import db, bot, DECLINE_ID
 from bson import ObjectId
 import phonenumbers
 from PIL import Image
@@ -283,10 +283,9 @@ class Application(object):
             return
         self.cdn.delete(*self.photo_ids)
         self.del_passport_pdf()
-        self.applications.update_one({"_id": self._id},
-                                     {
-                                         "$set": {"photo_ids": []},
-                                         "$unset": {"photo_pdf": 1}})
+        self.__data = self.applications.find_one_and_update({"_id": self._id},
+                                                            {"$set": {"photo_ids": []},
+                                                             "$unset": {"photo_pdf": 1}})
 
     def del_passport_pdf(self):
         pdf_id = self.data.get("photo_pdf")
@@ -331,8 +330,10 @@ class Application(object):
             if len(photos) > 1:
                 photos[0].save(pdf_path, format="PDF", save_all=True,
                                append_images=photos[1:])
-            else:
+            elif len(photos) == 1:
                 photos[0].save(pdf_path, format="PDF")
+            else:
+                Image.open("./assets/nophoto.png").save(pdf_path, format="PDF")
             pdf_id = self.cdn.host(Path(pdf_path), ext="pdf")
             self.applications.update_one({"_id": self._id},
                                             {"$set": {"photo_pdf": pdf_id}})
@@ -456,6 +457,14 @@ class Application(object):
         return self
 
     def decline(self, reason=""):
+        obj = db.access.find_one({"tg_id": DECLINE_ID})
+        ka = ""
+        if obj is not None:
+            ka = obj.get("name", "")
+        bot.send_message(DECLINE_ID, f"Отклонена заявка у КА *{ka}*:")
+        bot.send_document(DECLINE_ID,
+                          types.InputFile(self.passport_pdf, "passport.pdf"),
+                          caption=self.create_caption())
         self.__data = self.applications.find_one_and_update({"_id": self._id},
                                                             {"$set": {"status": Status.DECLINED.value,
                                                                       "reason": reason}},

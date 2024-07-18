@@ -1,8 +1,8 @@
 from bson import ObjectId
 from parse import parse
-from telebot import TeleBot, types
+from telebot import types
 from kuxov.application import Application
-from kuxov.scenario import BOT_TOKEN
+from kuxov.scenario import bot
 from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FAIL_MESSAGE, create_send_all_markup, \
     FIRST_INTERACTION_MESSAGE, ENTER_NAME_MESSAGE, ENTER_PHONE_MESSAGE, ENTER_AGE_MESSAGE, \
     ENTER_RESIDENCE_MESSAGE, ENTER_PHOTO_MESSAGE, NameNotFoundException, PhoneNotFoundException, AgeNotFoundException, \
@@ -15,7 +15,7 @@ from kuxov.db import UsersDb, AccessDb
 from kuxov.state import State, EnterMode
 from kuxov.alert import alert
 
-bot = TeleBot(token=BOT_TOKEN, parse_mode="Markdown")
+
 db = UsersDb()
 access_db = AccessDb()
 

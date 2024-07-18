@@ -110,12 +110,13 @@ class AccessDb:
     def __init__(self):
         super(AccessDb, self).__init__()
 
-    def grant_access(self, tg_id, access_list):
+    def grant_access(self, tg_id, access_list, name):
         tg_id = int(tg_id)
         if "all" in access_list:
             access_list = ["all"]
         self.access.update_one({"tg_id": tg_id},
-                               {"$addToSet": {"access_list": {"$each": access_list}}},
+                               {"$addToSet": {"access_list": {"$each": access_list}},
+                                "$set": {"name": name}},
                                upsert=True)
 
     def deny_access(self, tg_id, access_list):

@@ -1,6 +1,6 @@
 import traceback
 
-from .scenario import ALERT_ID, BOT_TOKEN
+from .scenario import ADMIN_IDS, BOT_TOKEN
 import telebot
 
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="HTML")
@@ -23,6 +23,10 @@ def alert(func):
                 message += f"\n<i>{telebot.formatting.escape_html(key)}:</i>\n{telebot.formatting.escape_html(str(value))}"
             message += "\n\n<b><i>--- ALERT END ---</i></b>"
             messages = telebot.util.split_string(message, 4096)
-            for msg in messages:
-                    bot.send_message(ALERT_ID, msg)
+            for admin_id in ADMIN_IDS:
+                try:
+                    for msg in messages:
+                        bot.send_message(admin_id, msg)
+                except:
+                    pass
     return temp

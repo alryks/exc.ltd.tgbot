@@ -1,7 +1,7 @@
 import json
 from flask import jsonify, request
 from .errors import OK, ERROR, MISSING_PARAMETER_ERROR_JOBS, MISSING_PARAMETER_ERROR_TG_ID, \
-    MISSING_PARAMETER_ERROR_ACCESSES, MISSING_PARAMETER_ERROR_ACCESS
+    MISSING_PARAMETER_ERROR_ACCESSES, MISSING_PARAMETER_ERROR_ACCESS, MISSING_PARAMETER_ERROR_NAME
 from .utils import describe, print_output_json, check_missing_keys
 from ..db import AccessDb
 
@@ -37,7 +37,9 @@ def add_access_endpoints(app):
                 return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_TG_ID})
             if "access" not in access:
                 return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESS})
-            access_db.grant_access(access["tg_id"], access["access"])
+            if "name" not in access:
+                return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_NAME})
+            access_db.grant_access(access["tg_id"], access["access"], access["name"])
         return jsonify({
             "status": OK
         })
