@@ -179,6 +179,7 @@ class Application(object):
                     access_db,
                     tg_id: int):
         jobs_list = get_jobs_list()
+        jobs_list = access_db.filter_jobs(tg_id, jobs_list)
         jobs_keys = [f"{job['объект']}|{job['должность']}|{job['пол']}"
                      for job in jobs_list]
         try:
