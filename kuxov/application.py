@@ -458,7 +458,7 @@ class Application(object):
         return self
 
     def decline(self, reason=""):
-        obj = db.access.find_one({"tg_id": DECLINE_ID})
+        obj = db.access.find_one({"tg_id": self.data.get("user_id")})
         ka = ""
         if obj is not None:
             ka = obj.get("name", "")
