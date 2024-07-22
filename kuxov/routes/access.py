@@ -1,8 +1,8 @@
 import json
 from flask import jsonify, request
-from .errors import OK, ERROR, MISSING_PARAMETER_ERROR_JOBS, MISSING_PARAMETER_ERROR_TG_ID, \
+from .errors import OK, ERROR, MISSING_PARAMETER_ERROR_API_KEY, BAD_API_KEY_ERROR, MISSING_PARAMETER_ERROR_JOBS, MISSING_PARAMETER_ERROR_TG_ID, \
     MISSING_PARAMETER_ERROR_ACCESSES, MISSING_PARAMETER_ERROR_ACCESS, MISSING_PARAMETER_ERROR_NAME
-from .utils import describe, print_output_json, check_missing_keys
+from .utils import describe, print_output_json, check_missing_keys, check_key, set_key
 from ..db import AccessDb
 
 
@@ -14,18 +14,29 @@ def add_access_endpoints(app):
               name="grant access",
               description="""Grant access to user""",
               inputs={
-                    "accesses": """
-[{"tg_id": 1214224, "access": ["Восток-Запад СПБ", "Восток-Север СПБ"]},
- {"tg_id": 1214224, "access": ["all"]}, ]
-"""
+                  "accesses":"""
+                      [{"tg_id": 1214224,
+                        "access": ["Восток-Запад СПБ", "Восток-Север СПБ"]},
+                       {"tg_id": 1214224, "access": ["all"]}, ],
+                  "key": "j283fihOP984un93hojse2326LKlekk"
+                  """
               },
               outputs={
                   "status": OK,
               })
     @check_missing_keys([
         ("accesses", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES}),
+        ("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}),
     ])
     def grant_access():
+        try:
+            key = request.json["key"]
+        except:
+            return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
+
+        if not check_key(key):
+            return jsonify({"status": ERROR, "status_code": BAD_API_KEY_ERROR})
+
         try:
             accesses = request.json["accesses"]
         except:
@@ -44,36 +55,33 @@ def add_access_endpoints(app):
             "status": OK
         })
 
-    @app.route('/deny_access', methods=['POST'])
+    @app.route('/get_api_key', methods=['POST'])
     @describe(["access"],
-              name="deny access",
-              description="""Deny access to user""",
+              name="get api key",
+              description="""Get api key""",
               inputs={
-                  "accesses": """
-    [{"tg_id": 1214224, "access": ["Восток-Запад СПБ", "Восток-Север СПБ"]},
-     {"tg_id": 1214224, "access": ["all"]}, ]
-    """
+                  "key": "asdfwf234un93hojssdf14112333ekk"
               },
               outputs={
                   "status": OK,
+                  "key": "j283fihOP984un93hojse2326LKlekk"
               })
     @check_missing_keys([
-        ("accesses", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES}),
+        ("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}),
     ])
-    def deny_access():
+    def get_api_key():
         try:
-            accesses = request.json["accesses"]
+            key = request.json["key"]
         except:
-            return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES})
+            return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
 
-        for access in accesses:
-            if "tg_id" not in access:
-                return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_TG_ID})
-            if "access" not in access:
-                return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESS})
-            access_db.deny_access(access["tg_id"], access["access"])
+        new_key = set_key(key)
+        if not new_key:
+            return jsonify({"status": ERROR, "status_code": BAD_API_KEY_ERROR})
+
         return jsonify({
-            "status": OK
+            "status": OK,
+            "key": new_key
         })
 
     return app

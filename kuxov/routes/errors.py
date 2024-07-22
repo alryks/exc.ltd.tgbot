@@ -3,6 +3,9 @@
 OK = "ok"
 ERROR = "error"
 
+MISSING_PARAMETER_ERROR_API_KEY = "missing_parameter_error_api_key"
+BAD_API_KEY_ERROR = "bad_api_key_error"
+
 MISSING_PARAMETER_ERROR_TG_ID = "missing_parameter_error_tg_id"
 MISSING_PARAMETER_ERROR_ACCESS = "missing_parameter_error_access"
 MISSING_PARAMETER_ERROR_NAME = "missing_parameter_error_name"

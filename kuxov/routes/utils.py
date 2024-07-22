@@ -7,6 +7,8 @@ from time import time
 from bson import ObjectId
 from flask import request, jsonify, Response
 
+from secrets import token_urlsafe
+
 
 class CustomJSONEncoder(DefaultJSONProvider):
     def default(self, obj):
@@ -17,6 +19,24 @@ class CustomJSONEncoder(DefaultJSONProvider):
         if isinstance(obj, ObjectId):
             return str(obj)
         return DefaultJSONProvider.default(obj)
+
+
+def check_key(key):
+    try:
+        return open("key.txt", "r").read().strip() == key.strip()
+    except:
+        return False
+
+
+def set_key(key):
+    prev_key = open("key.txt", "r").read().strip()
+    if prev_key == "" or prev_key == key.strip():
+        new_key = token_urlsafe(32)
+        open("key.txt", "w").write(new_key)
+        return new_key
+
+    return ""
+
 
 
 def check_missing_keys(keys_and_errors,
