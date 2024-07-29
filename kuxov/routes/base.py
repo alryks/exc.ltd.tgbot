@@ -21,9 +21,9 @@ def create_app():
     return app
 
 
-def get_backend_app():
+def get_backend_app(no_key):
     app = create_app()
-    app = add_jobs_endpoints(app)
-    app = add_apps_endpoints(app)
-    app = add_access_endpoints(app)
+    app = add_jobs_endpoints(app, no_key)
+    app = add_apps_endpoints(app, no_key)
+    app = add_access_endpoints(app, no_key)
     return app

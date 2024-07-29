@@ -6,36 +6,52 @@ from .utils import describe, print_output_json, check_missing_keys, check_key, s
 from ..db import AccessDb
 
 
-def add_access_endpoints(app):
+def add_access_endpoints(app, no_key):
     access_db = AccessDb()
+
+    missing_keys = [
+        ("accesses", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES}),
+    ]
+
+    if not no_key:
+        missing_keys.append(("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}))
+
+    inputs = {
+        "accesses": [
+            {
+                "tg_id": 1214224,
+                "access": ["Восток-Запад СПБ", "Восток-Север СПБ"],
+                "name": "test"
+            },
+            {
+                "tg_id": 1214224,
+                "access": ["all"],
+                "name": "test"
+            },
+        ]
+    }
+
+    if not no_key:
+        inputs["key"] = "j283fihOP984un93hojse2326LKlekk"
 
     @app.route('/grant_access', methods=['POST'])
     @describe(["access"],
               name="grant access",
               description="""Grant access to user""",
-              inputs={
-                  "accesses":"""
-                      [{"tg_id": 1214224,
-                        "access": ["Восток-Запад СПБ", "Восток-Север СПБ"]},
-                       {"tg_id": 1214224, "access": ["all"]}, ],
-                  "key": "j283fihOP984un93hojse2326LKlekk"
-                  """
-              },
+              inputs=inputs,
               outputs={
                   "status": OK,
               })
-    @check_missing_keys([
-        ("accesses", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES}),
-        ("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}),
-    ])
+    @check_missing_keys(missing_keys)
     def grant_access():
-        try:
-            key = request.json["key"]
-        except:
-            return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
+        if not no_key:
+            try:
+                key = request.json["key"]
+            except:
+                return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
 
-        if not check_key(key):
-            return jsonify({"status": ERROR, "status_code": BAD_API_KEY_ERROR})
+            if not check_key(key):
+                return jsonify({"status": ERROR, "status_code": BAD_API_KEY_ERROR})
 
         try:
             accesses = request.json["accesses"]
@@ -55,33 +71,34 @@ def add_access_endpoints(app):
             "status": OK
         })
 
-    @app.route('/get_api_key', methods=['POST'])
-    @describe(["access"],
-              name="get api key",
-              description="""Get api key""",
-              inputs={
-                  "key": "asdfwf234un93hojssdf14112333ekk"
-              },
-              outputs={
-                  "status": OK,
-                  "key": "j283fihOP984un93hojse2326LKlekk"
-              })
-    @check_missing_keys([
-        ("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}),
-    ])
-    def get_api_key():
-        try:
-            key = request.json["key"]
-        except:
-            return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
+    if not no_key:
+        @app.route('/get_api_key', methods=['POST'])
+        @describe(["access"],
+                  name="get api key",
+                  description="""Get api key""",
+                  inputs={
+                      "key": "asdfwf234un93hojssdf14112333ekk"
+                  },
+                  outputs={
+                      "status": OK,
+                      "key": "j283fihOP984un93hojse2326LKlekk"
+                  })
+        @check_missing_keys([
+            ("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}),
+        ])
+        def get_api_key():
+            try:
+                key = request.json["key"]
+            except:
+                return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
 
-        new_key = set_key(key)
-        if not new_key:
-            return jsonify({"status": ERROR, "status_code": BAD_API_KEY_ERROR})
+            new_key = set_key(key)
+            if not new_key:
+                return jsonify({"status": ERROR, "status_code": BAD_API_KEY_ERROR})
 
-        return jsonify({
-            "status": OK,
-            "key": new_key
-        })
+            return jsonify({
+                "status": OK,
+                "key": new_key
+            })
 
     return app

@@ -12,14 +12,18 @@ def parse_args():
                         type=int)
     parser.add_argument("--debug",
                         action="store_true")
+    parser.add_argument("--no-key",
+                        action="store_true")
+
     args = parser.parse_args()
     return args
 
 
 def run_backend(host: str,
                 port: int,
-                debug: bool):
-    app = get_backend_app()
+                debug: bool,
+                no_key: bool):
+    app = get_backend_app(no_key)
     app.run(host=host,
             port=port,
             debug=debug,

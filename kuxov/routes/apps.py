@@ -7,16 +7,25 @@ from ..application import Application
 from ..state import Status
 
 
-def add_apps_endpoints(app):
+def add_apps_endpoints(app, no_key):
+    missing_keys = [
+        ("apps", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_APPS}),
+    ]
+    if not no_key:
+        missing_keys.append(("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}))
+
+    inputs = {
+        "tg_id": 1124414212412421,
+    }
+
+    if not no_key:
+        inputs["key"] = "j283fihOP984un93hojse2326LKlekk"
 
     @app.route('/get_apps', methods=['POST'])
     @describe(["apps"],
               name="get_apps",
               description="""Get applications from bot""",
-              inputs={
-                  "tg_id": 1124414212412421,
-                  "key": "j283fihOP984un93hojse2326LKlekk"
-              },
+              inputs=inputs,
               outputs={
                   "status": OK,
                   "applications": """[{{'_id': ObjectId(
@@ -36,9 +45,10 @@ def add_apps_endpoints(app):
                                      'residence': 'Россия', 'photo_ids': []}}],"""
               })
     def get_apps():
-        if not check_key(request.json.get("key")):
-            return jsonify({"status": ERROR,
-                            "status_code": BAD_API_KEY_ERROR})
+        if not no_key:
+            if not check_key(request.json.get("key")):
+                return jsonify({"status": ERROR,
+                                "status_code": BAD_API_KEY_ERROR})
 
         tg_id = request.json.get("tg_id")
         if tg_id is not None:
@@ -53,28 +63,37 @@ def add_apps_endpoints(app):
         return jsonify([Application.remain_basic_job_fields(app.data)
                         for app in apps])
 
+    inputs = {
+        "apps": [
+            {
+                "application_id": "6670b8bd7b24be8bc6dc7132",
+                "status": "accept",
+                "reason": "no reason"
+            },
+            {
+                "application_id": "7344fd7a102b6670b8bd7744",
+                "status": "decline",
+                "reason": "duplicate"
+            }
+        ]
+    }
+    if not no_key:
+        inputs["key"] = "j283fihOP984un93hojse2326LKlekk"
+
     @app.route('/mark_apps', methods=['POST'])
     @describe(["apps"],
               name="mark_apps",
               description="""Mark list of applications accept/decline""",
-              inputs={
-                  "apps":
-                      {"application_id": "_id from previous call",
-                       "status": "accept",
-                       "reason": "no reason"},
-                  "key": "j283fihOP984un93hojse2326LKlekk"
-              },
+              inputs=inputs,
               outputs={
                   "status": OK,
               })
-    @check_missing_keys([
-        ("apps", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_APPS}),
-        ("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}),
-    ])
+    @check_missing_keys(missing_keys)
     def mark_apps():
-        if not check_key(request.json.get("key")):
-            return jsonify({"status": ERROR,
-                            "status_code": BAD_API_KEY_ERROR})
+        if not no_key:
+            if not check_key(request.json.get("key")):
+                return jsonify({"status": ERROR,
+                                "status_code": BAD_API_KEY_ERROR})
 
         apps = request.json["apps"]
         for i, app in enumerate(apps):
