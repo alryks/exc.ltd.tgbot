@@ -42,7 +42,7 @@ def add_apps_endpoints(app, no_key):
                                      'phone': '+79263455382',
                                      'age': datetime.datetime(1997, 11, 19, 0,
                                                               0),
-                                     'residence': 'Россия', 'photo_ids': []}}],"""
+                                     'residence': 'Россия', 'photo_ids': [], 'photo_pdf': '6670b8bd7b24be8bc6dc7132'}}],"""
               })
     def get_apps():
         if not no_key:
