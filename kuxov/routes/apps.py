@@ -40,8 +40,8 @@ def add_apps_endpoints(app, no_key):
                                              'вид_внешности': 'славянская и не славянская внешность'},
                                      'name': 'Каспарьянц Георгий Григорьевич',
                                      'phone': '+79263455382',
-                                     'age': datetime.datetime(1997, 11, 19, 0,
-                                                              0),
+                                     'age': datetime.datetime(1997, 11, 19, 0, 0),
+                                     'date_on_object': datetime.datetime(2024, 8, 8, 0, 0),
                                      'residence': 'Россия', 'photo_ids': [], 'photo_pdf': '6670b8bd7b24be8bc6dc7132'}}],"""
               })
     def get_apps():

@@ -458,15 +458,14 @@ class Application(object):
         return self
 
     def decline(self, reason=""):
-        if reason == "duplicate":
-            obj = db.access.find_one({"tg_id": self.data.get("user_id")})
-            ka = ""
-            if obj is not None:
-                ka = obj.get("name", "")
-            bot.send_message(DECLINE_ID, f"Найден дубликат заявки у КА *{ka}*:")
-            bot.send_document(DECLINE_ID,
-                              types.InputFile(self.passport_pdf, "passport.pdf"),
-                              caption=self.create_caption())
+        obj = db.access.find_one({"tg_id": self.data.get("user_id")})
+        ka = ""
+        if obj is not None:
+            ka = obj.get("name", "")
+        bot.send_message(DECLINE_ID, f"Найден дубликат заявки у КА *{ka}*:")
+        bot.send_document(DECLINE_ID,
+                          types.InputFile(self.passport_pdf, "passport.pdf"),
+                          caption=self.create_caption())
         self.__data = self.applications.find_one_and_update({"_id": self._id},
                                                             {"$set": {"status": Status.DECLINED.value,
                                                                       "reason": reason}},
