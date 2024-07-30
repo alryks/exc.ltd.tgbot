@@ -31,7 +31,7 @@ def add_access_endpoints(app, no_key):
                   "status": OK,
               })
     @check_missing_keys(
-        ("accesses", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES}),
+        [("accesses", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES})],
     )
     def grant_access():
         if not no_key:

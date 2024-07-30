@@ -27,7 +27,7 @@ def add_jobs_endpoints(app, no_key):
                   "status": OK,
               })
     @check_missing_keys(
-        ("jobs", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_JOBS})
+        [("jobs", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_JOBS})]
     )
     def set_jobs():
         if not no_key:

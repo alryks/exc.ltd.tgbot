@@ -74,7 +74,7 @@ def add_apps_endpoints(app, no_key):
                   "status": OK,
               })
     @check_missing_keys(
-        ("apps", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_APPS}),
+        [("apps", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_APPS})],
     )
     def mark_apps():
         if not no_key:
