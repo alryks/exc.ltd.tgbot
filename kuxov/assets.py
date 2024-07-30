@@ -17,11 +17,11 @@ SEND_ALL_FAIL_MESSAGE = """
 """
 
 WELCOME_MESSAGE = """
-Здравствуйте, это тестовый бот ввода информации о кандидатах.
+Здравствуйте, это бот для отправки кандидатов сразу на проект.
 """
 
 FIRST_INTERACTION_MESSAGE = """
-Спасибо, что зарегестрировались в боте.
+Спасибо, что зарегистрировались в боте.
 Ваш уровень доступа: {access}.
 """
 
@@ -82,7 +82,8 @@ def create_send_all_markup():
     markup.row(types.KeyboardButton("Отмена"))
     return markup
 
-def create_redidence_markup(countries):
+
+def create_residence_markup(countries):
     markup = types.ReplyKeyboardMarkup()
     for country in countries:
         button = types.KeyboardButton(country)
@@ -244,7 +245,7 @@ JOBS_LIST = [
 ] * 10
 
 
-ResidenceReplyMarkup = create_redidence_markup(COUNTRIES)
+ResidenceReplyMarkup = create_residence_markup(COUNTRIES)
 GenderReplyMarkup = create_gender_markup(GENDERS)
 NoMarkup = types.ReplyKeyboardMarkup(resize_keyboard=True).row(types.KeyboardButton("В главное меню"))
 AnotherDocumentReplyMarkup = create_another_document_markup()
