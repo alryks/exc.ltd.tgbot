@@ -9,44 +9,34 @@ from ..db import AccessDb
 def add_access_endpoints(app, no_key):
     access_db = AccessDb()
 
-    missing_keys = [
-        ("accesses", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES}),
-    ]
-
-    if not no_key:
-        missing_keys.append(("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}))
-
-    inputs = {
-        "accesses": [
-            {
-                "tg_id": 1214224,
-                "access": ["Восток-Запад СПБ", "Восток-Север СПБ"],
-                "name": "test"
-            },
-            {
-                "tg_id": 1214224,
-                "access": ["all"],
-                "name": "test"
-            },
-        ]
-    }
-
-    if not no_key:
-        inputs["key"] = "j283fihOP984un93hojse2326LKlekk"
-
     @app.route('/grant_access', methods=['POST'])
     @describe(["access"],
               name="grant access",
               description="""Grant access to user""",
-              inputs=inputs,
+              inputs={
+                "accesses": [
+                    {
+                        "tg_id": 1214224,
+                        "access": ["Восток-Запад СПБ", "Восток-Север СПБ"],
+                        "name": "test"
+                    },
+                    {
+                        "tg_id": 1214224,
+                        "access": ["all"],
+                        "name": "test"
+                    },
+                ]
+            },
               outputs={
                   "status": OK,
               })
-    @check_missing_keys(missing_keys)
+    @check_missing_keys(
+        ("accesses", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_ACCESSES}),
+    )
     def grant_access():
         if not no_key:
             try:
-                key = request.json["key"]
+                key = request.headers.get("X-API-KEY")
             except:
                 return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
 
@@ -76,19 +66,15 @@ def add_access_endpoints(app, no_key):
         @describe(["access"],
                   name="get api key",
                   description="""Get api key""",
-                  inputs={
-                      "key": "asdfwf234un93hojssdf14112333ekk"
-                  },
+                  inputs={},
                   outputs={
                       "status": OK,
                       "key": "j283fihOP984un93hojse2326LKlekk"
                   })
-        @check_missing_keys([
-            ("key", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY}),
-        ])
+        @check_missing_keys([])
         def get_api_key():
             try:
-                key = request.json["key"]
+                key = request.headers.get("X-API-KEY")
             except:
                 return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
 
