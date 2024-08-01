@@ -20,7 +20,7 @@ import os
 from pathlib import Path
 from pymongo.collection import Collection, ReturnDocument
 
-from utils import calculate_age
+from .utils import calculate_age
 
 from .state import Status
 
