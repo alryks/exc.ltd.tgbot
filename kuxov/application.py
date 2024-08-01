@@ -247,6 +247,8 @@ class Application(object):
             raise AgeNotFoundException()
         if dt.year == datetime.now().year:
             raise AgeNotFoundException()
+        if datetime.now().year - dt.year > 100 or datetime.now().year - dt.year < 16:
+            raise AgeNotFoundException()
         return dt
 
     @staticmethod
