@@ -20,6 +20,8 @@ import os
 from pathlib import Path
 from pymongo.collection import Collection, ReturnDocument
 
+from utils import calculate_age
+
 from .state import Status
 
 ddp = DateDataParser(languages=['ru'])
@@ -245,9 +247,7 @@ class Application(object):
         dt: datetime = ddp.get_date_data(text).date_obj
         if dt is None:
             raise AgeNotFoundException()
-        if dt.year == datetime.now().year:
-            raise AgeNotFoundException()
-        if datetime.now().year - dt.year > 100 or datetime.now().year - dt.year < 16:
+        if calculate_age(dt) < 16 or calculate_age(dt) > 100:
             raise AgeNotFoundException()
         return dt
 
@@ -399,7 +399,7 @@ class Application(object):
 *ФИО:* {self.name}
 *Пол:* {self.gender}
 *Телефон:* {self.phone}
-*Дата рождения:* {self.age.strftime('%d.%m.%Y')} ({(datetime.now() - self.age).days // 365} лет)
+*Дата рождения:* {self.age.strftime('%d.%m.%Y')} ({calculate_age(self.age)} лет)
 *Дата прибытия на объект:* {self.date_on_object.strftime('%d.%m.%Y')}
 *Резиденство:* {self.residence}
 *Кол-во документов:* {len(self.photo_ids)} шт.
