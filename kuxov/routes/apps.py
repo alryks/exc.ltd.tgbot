@@ -19,7 +19,7 @@ def add_apps_endpoints(app, no_key):
               },
               outputs={
                   "status": OK,
-                  "applications": [{{'_id': '6670b8bd7b24be8bc6dc7132',
+                  "applications": [{'_id': '6670b8bd7b24be8bc6dc7132',
                                      'gender': 'Мужской',
                                      'job': {'объект': 'Восток-Запад СПБ',
                                              'должность': 'Комплектовщик',
@@ -35,7 +35,7 @@ def add_apps_endpoints(app, no_key):
                                      'date_on_object': '2024-08-08 00:00:00',
                                      'residence': 'Россия',
                                      'photo_ids': [],
-                                     'photo_pdf': '6670b8bd7b24be8bc6dc7132'}}]
+                                     'photo_pdf': '6670b8bd7b24be8bc6dc7132'}]
               })
     def get_apps():
         if not no_key:
