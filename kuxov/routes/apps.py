@@ -28,7 +28,7 @@ def add_apps_endpoints(app, no_key):
                                              'тип_работы': 'Вахта',
                                              'вид_внешности': 'славянская и не славянская внешность'},
                                      'name': 'Каспарьянц Георгий Григорьевич',
-                                     'phone': '+79263455382',
+                                     'phone': '+7 (926) 345-53-82
                                      'age': datetime.datetime(1997, 11, 19, 0, 0),
                                      'date_on_object': datetime.datetime(2024, 8, 8, 0, 0),
                                      'residence': 'Россия', 'photo_ids': [], 'photo_pdf': '6670b8bd7b24be8bc6dc7132'}}],"""
@@ -49,7 +49,7 @@ def add_apps_endpoints(app, no_key):
                     "status_code": BAD_TG_ID_ERROR
                 })
         apps = Application.list_not_verified(user_id=tg_id)
-        return jsonify([Application.remain_basic_job_fields(app.data)
+        return jsonify([Application.prepare_for_api(app.data)
                         for app in apps])
 
     @app.route('/mark_apps', methods=['POST'])

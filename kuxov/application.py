@@ -111,7 +111,7 @@ class Application(object):
         return self.__data
 
     @staticmethod
-    def remain_basic_job_fields(obj):
+    def prepare_for_api(obj):
         if "job" not in obj:
             return obj
         obj['job'] = {
@@ -119,6 +119,8 @@ class Application(object):
             "должность": obj['job']["должность"],
             "пол": obj['job']["пол"],
         }
+        obj['phone'] = "+7" + phonenumbers.format_number(phonenumbers.parse(obj['phone'], 'RU'),
+                                                         phonenumbers.PhoneNumberFormat.NATIONAL)[1:]
         return obj
 
     @property
