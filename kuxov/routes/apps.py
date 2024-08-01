@@ -1,3 +1,5 @@
+import json
+
 from flask import jsonify, request
 
 from .errors import OK, ERROR, MISSING_PARAMETER_ERROR_API_KEY, BAD_API_KEY_ERROR, MISSING_PARAMETER_ERROR_TG_ID, BAD_TG_ID_ERROR, MISSING_PARAMETER_ERROR_STATUS, \
@@ -17,8 +19,8 @@ def add_apps_endpoints(app, no_key):
               },
               outputs={
                   "status": OK,
-                  "applications": """[{{'_id': ObjectId(
-                      '6670b8bd7b24be8bc6dc7132'), 'gender': 'Мужской',
+                  "applications": [{{'_id': '6670b8bd7b24be8bc6dc7132',
+                                     'gender': 'Мужской',
                                      'job': {'объект': 'Восток-Запад СПБ',
                                              'должность': 'Комплектовщик',
                                              'возраст_от': 18,
@@ -28,10 +30,12 @@ def add_apps_endpoints(app, no_key):
                                              'тип_работы': 'Вахта',
                                              'вид_внешности': 'славянская и не славянская внешность'},
                                      'name': 'Каспарьянц Георгий Григорьевич',
-                                     'phone': '+7 (926) 345-53-82
-                                     'age': datetime.datetime(1997, 11, 19, 0, 0),
-                                     'date_on_object': datetime.datetime(2024, 8, 8, 0, 0),
-                                     'residence': 'Россия', 'photo_ids': [], 'photo_pdf': '6670b8bd7b24be8bc6dc7132'}}],"""
+                                     'phone': '+7 (926) 345-53-82',
+                                     'age': '1997-11-19 00:00:00',
+                                     'date_on_object': '2024-08-08 00:00:00',
+                                     'residence': 'Россия',
+                                     'photo_ids': [],
+                                     'photo_pdf': '6670b8bd7b24be8bc6dc7132'}}]
               })
     def get_apps():
         if not no_key:
@@ -82,7 +86,7 @@ def add_apps_endpoints(app, no_key):
                 return jsonify({"status": ERROR,
                                 "status_code": BAD_API_KEY_ERROR})
 
-        apps = request.json["apps"]
+        apps = json.loads(request.json["apps"])
         for i, app in enumerate(apps):
             if "application_id" not in app:
                 return jsonify({"status": ERROR,
