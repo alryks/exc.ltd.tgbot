@@ -196,7 +196,7 @@ class Application(object):
     @staticmethod
     def extract_name(text: str):
         text = text.strip().replace('.', ' ').replace('!', ' ').lower()
-        if not re.match("^[а-яА-Я -]+$", text):
+        if not re.match("^[а-яА-ЯёË -]+$", text):
             raise NameNotFoundException()
         text = '-'.join([txt.strip().capitalize()
                          for txt in text.split('-')

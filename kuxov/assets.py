@@ -61,7 +61,7 @@ ENTER_RESIDENCE_MESSAGE = """
 """
 
 ENTER_PHOTO_MESSAGE = """
-Отправьте фото паспорта.
+Отправьте фото паспорта. Если внесли все документы, нажмите кнопку \"Закончить ввод фото\"
 """
 
 APPLICATION_DELETE_MESSAGE = """
