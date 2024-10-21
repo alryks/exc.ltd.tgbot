@@ -8,11 +8,11 @@ SCENARIO = [
 ]
 
 ADMIN_IDS = [
-    111111111,
 
 ]
 
-DECLINE_ID = 111111111
+ACCEPT_ID = []
+DECLINE_ID = []
 
 BOT_TOKEN = ""
 bot = TeleBot(token=BOT_TOKEN, parse_mode="Markdown")

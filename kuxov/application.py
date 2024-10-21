@@ -11,7 +11,7 @@ from .assets import NameNotFoundException, PhoneNotFoundException, AgeNotFoundEx
     ResidenceNotFoundException, GENDERS, GenderNotFoundException, JOBS_LIST, JobNotFoundException, NoMarkup, \
     get_jobs_list, DateOnObjectNotFoundException
 from .cdn import CDN
-from .scenario import db, bot, DECLINE_ID
+from .scenario import db, bot, ACCEPT_ID, DECLINE_ID
 from bson import ObjectId
 import phonenumbers
 from PIL import Image
@@ -455,6 +455,15 @@ class Application(object):
         return f"Application({self.data})"
 
     def accept(self, reason=""):
+        obj = db.access.find_one({"tg_id": self.data.get("user_id")})
+        ka = ""
+        if obj is not None:
+            ka = obj.get("name", "")
+        for tg_id in ACCEPT_ID:
+            bot.send_message(tg_id, f"Анкета корректна у КА: *{ka}*:")
+            bot.send_document(tg_id,
+                              types.InputFile(self.passport_pdf, "passport.pdf"),
+                              caption=self.create_caption())
         self.__data = self.applications.find_one_and_update({"_id": self._id},
                                                             {"$set": {"status": Status.ACCEPTED.value,
                                                                       "reason": reason}},
@@ -466,10 +475,11 @@ class Application(object):
         ka = ""
         if obj is not None:
             ka = obj.get("name", "")
-        bot.send_message(DECLINE_ID, f"Найден дубликат заявки у КА *{ka}*:")
-        bot.send_document(DECLINE_ID,
-                          types.InputFile(self.passport_pdf, "passport.pdf"),
-                          caption=self.create_caption())
+        for tg_id in DECLINE_ID:
+            bot.send_message(tg_id, f"Найден дубликат заявки у КА *{ka}*:")
+            bot.send_document(tg_id,
+                              types.InputFile(self.passport_pdf, "passport.pdf"),
+                              caption=self.create_caption())
         self.__data = self.applications.find_one_and_update({"_id": self._id},
                                                             {"$set": {"status": Status.DECLINED.value,
                                                                       "reason": reason}},
