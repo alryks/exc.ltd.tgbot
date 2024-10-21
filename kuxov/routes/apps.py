@@ -110,6 +110,7 @@ def add_apps_endpoints(app, no_key):
                 return jsonify({"status": ERROR,
                                 "status_code": BAD_STATUS_ERROR})
 
+            print(app)
             reason = str(app.get("reason", ""))
             if status == Status.ACCEPTED:
                 application.accept(reason=reason)
