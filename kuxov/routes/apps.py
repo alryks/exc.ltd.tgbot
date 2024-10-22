@@ -17,6 +17,9 @@ from kuxov.db import AccessDb
 from datetime import datetime
 
 
+access_db = AccessDb()
+
+
 def add_apps_endpoints(app, no_key):
     @app.route('/get_apps', methods=['POST'])
     @describe(["apps"],
@@ -142,7 +145,7 @@ def update_table(application):
 
     try:
         service = build("sheets", "v4", credentials=creds)
-        access_name = AccessDb.get_name(application["tg_id"])
+        access_name = access_db.get_name(application["tg_id"])
         if not access_name:
             return
 
