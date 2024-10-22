@@ -150,7 +150,7 @@ def update_table(application):
             return
 
         values = [
-            [datetime.now().strftime("%Y.%m.%d %H:%M"), access_name, application["name"], "Принят" if application["status"] == "accepted" else "Отклонен"]
+            [datetime.now().strftime("%Y-%m-%d %H:%M"), access_name, application["name"], "Принят" if application["status"] == "accepted" else "Отклонен"]
         ]
         body = {"values": values}
 
