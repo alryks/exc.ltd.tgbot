@@ -145,7 +145,7 @@ def update_table(application):
 
     try:
         service = build("sheets", "v4", credentials=creds)
-        access_name = access_db.get_name(application["tg_id"])
+        access_name = access_db.get_name(application["user_id"])
         if not access_name:
             return
 
