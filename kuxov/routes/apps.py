@@ -8,6 +8,14 @@ from .utils import describe, print_output_json, check_missing_keys, check_key
 from ..application import Application
 from ..state import Status
 
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+from kuxov.scenario import SPREADSHEET_ID, SPREADSHEET_RANGE
+from kuxov.db import AccessDb
+from datetime import datetime
+
 
 def add_apps_endpoints(app, no_key):
     @app.route('/get_apps', methods=['POST'])
@@ -116,7 +124,43 @@ def add_apps_endpoints(app, no_key):
             elif status == Status.DECLINED:
                 application.decline(reason=reason)
 
+            update_table(application.data)
+
         return jsonify({
             "status": OK
         })
     return app
+
+
+def update_table(application):
+    if "status" not in application:
+        return
+
+    creds = Credentials.from_service_account_file("credentials.json",
+                                                  scopes=["https://www.googleapis.com/auth/spreadsheets"])
+    value_input_option = "RAW"
+
+    try:
+        service = build("sheets", "v4", credentials=creds)
+        access_name = AccessDb.get_name(application["tg_id"])
+        if not access_name:
+            return
+
+        values = [
+            [datetime.now().strftime("%Y.%m.%d %H:%M"), access_name, application["name"], "Принят" if application["status"] == "accepted" else "Отклонен"]
+        ]
+        body = {"values": values}
+
+        result = (
+            service.spreadsheets()
+            .values()
+            .append(
+                spreadsheetId=SPREADSHEET_ID,
+                range=SPREADSHEET_RANGE,
+                valueInputOption=value_input_option,
+                body=body,
+            )
+            .execute()
+        )
+    except HttpError as error:
+        print(f"An error occurred: {error}")

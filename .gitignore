@@ -3,6 +3,7 @@ test.py
 jobs.json
 .DS_Store
 kuxov/scenario.py
+credentials.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
