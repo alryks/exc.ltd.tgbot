@@ -10,7 +10,7 @@ from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FA
     ResidenceReplyMarkup, WELCOME_MESSAGE, NoMarkup, GenderNotFoundException, ENTER_GENDER_MESSAGE, GenderReplyMarkup, \
     create_jobs_markup, exception_handler, ENTER_JOBS_MESSAGE, AnotherDocumentReplyMarkup, create_commands_markup, \
     create_list_commands_markup, DONT_UNDERSTOOD_MESSAGE, PassportNotEnoughException, INVALID_JOBS_LIST_MESSAGE, \
-    ENTER_DATE_ON_OBJECT_MESSAGE
+    ENTER_DATE_ON_OBJECT_MESSAGE, ENTER_COMMENT_MESSAGE, SkipCommentReplyMarkup
 from kuxov.db import UsersDb, AccessDb
 from kuxov.state import State, EnterMode
 from kuxov.alert import alert
@@ -281,12 +281,10 @@ def send_welcome(message: types.Message):
                                  EnterMode.FILLING)
     elif state == State.ENTER_PHOTO:
         if message.text == "Закончить ввод фото" and len(application.photo_ids) > 0:
-            bot.delete_message(message.chat.id,
-                               message.message_id)
-            application.send_to(bot, message.chat.id,
-                                edit_message_id=edit_message_id)
-            db.set_entering_mode(message.chat.id,
-                                 EnterMode.FILLING)
+            bot.send_message(message.chat.id,
+                             ENTER_COMMENT_MESSAGE,
+                             reply_markup=SkipCommentReplyMarkup)
+            db.set_current_state(message.chat.id, State.ENTER_COMMENT)
             return
 
         if message.photo:
@@ -320,6 +318,17 @@ def send_welcome(message: types.Message):
                                     bot.reply_to(message,
                                                  PassportNotFoundException.MESSAGE).message_id)
             return
+    elif state == State.ENTER_COMMENT:
+        if message.text != "Пропустить":
+            application.set_comment(message.text)
+        else:
+            application.set_comment("")
+        bot.delete_message(message.chat.id,
+                           message.message_id)
+        application.send_to(bot, message.chat.id,
+                            edit_message_id=edit_message_id)
+        db.set_entering_mode(message.chat.id,
+                             EnterMode.FILLING)
     else:
         db.delete_message_after(tg_id,
                                 bot.reply_to(message, DONT_UNDERSTOOD_MESSAGE).message_id)

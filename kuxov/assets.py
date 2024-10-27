@@ -77,6 +77,11 @@ DONT_UNDERSTOOD_MESSAGE = """
 """
 
 
+ENTER_COMMENT_MESSAGE = """
+Введите комментарий к анкете или нажмите кнопку "Пропустить".
+"""
+
+
 def create_send_all_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(types.KeyboardButton("Отмена"))
@@ -356,3 +361,12 @@ def exception_handler(bot, db):
         return temp
 
     return temp_decorator
+
+
+def create_skip_comment_markup():
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.row(types.KeyboardButton("Пропустить"))
+    markup.row(types.KeyboardButton("В главное меню"))
+    return markup
+
+SkipCommentReplyMarkup = create_skip_comment_markup()

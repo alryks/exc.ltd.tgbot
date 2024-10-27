@@ -46,7 +46,8 @@ def add_apps_endpoints(app, no_key):
                                      'date_on_object': '2024-08-08 00:00:00',
                                      'residence': 'Россия',
                                      'photo_ids': [],
-                                     'photo_pdf': '6670b8bd7b24be8bc6dc7132'}]
+                                     'photo_pdf': '6670b8bd7b24be8bc6dc7132',
+                                     'comment': 'Комментарий к анкете'}]
               })
     def get_apps():
         if not no_key:
@@ -64,6 +65,8 @@ def add_apps_endpoints(app, no_key):
                     "status_code": BAD_TG_ID_ERROR
                 })
         apps = Application.list_not_verified(user_id=tg_id)
+        print(apps)
+        print(tg_id)
         return jsonify([Application.prepare_for_api(app.data)
                         for app in apps])
 

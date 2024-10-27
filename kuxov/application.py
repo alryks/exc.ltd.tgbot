@@ -40,6 +40,7 @@ class Application(object):
         "age",
         "residence",
         "photo_ids",
+        "comment",
     ]
 
     MAIN_FIELDS = [
@@ -51,6 +52,7 @@ class Application(object):
         "date_on_object",
         "residence",
         "photo_ids",
+        "comment",
     ]
 
     applications: Collection = db.applications
@@ -403,6 +405,7 @@ class Application(object):
 *Дата прибытия на объект:* {self.date_on_object.strftime('%d.%m.%Y')}
 *Резиденство:* {self.residence}
 *Кол-во документов:* {len(self.photo_ids)} шт.
+*Комментарий:* {self.comment or 'Нет комментария'}
         """
         return caption
 
@@ -527,3 +530,13 @@ class Application(object):
                                                  **{"user_id": user_id if user_id is not None else {"$exists": True}},
                                                  **{main_field: {"$exists": True}
                                                     for main_field in Application.MAIN_FIELDS}})
+
+    @property
+    def comment(self):
+        return self.data.get("comment")
+    
+    def set_comment(self, comment: str):
+        self.__data = self.applications.find_one_and_update({"_id": self._id},
+                                                            {"$set": {"comment": comment}},
+                                                            return_document=ReturnDocument.AFTER)
+        return self
