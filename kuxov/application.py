@@ -125,6 +125,8 @@ class Application(object):
         }
         obj['phone'] = "+7" + phonenumbers.format_number(phonenumbers.parse(obj['phone'], 'RU'),
                                                          phonenumbers.PhoneNumberFormat.NATIONAL)[1:]
+        if "comment" in obj:
+            obj['comment'] = f"СНП Бот: {obj['comment']}" if obj['comment'] else "СНП Бот: "
         return obj
 
     @property
@@ -540,3 +542,4 @@ class Application(object):
                                                             {"$set": {"comment": comment}},
                                                             return_document=ReturnDocument.AFTER)
         return self
+
