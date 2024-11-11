@@ -396,17 +396,28 @@ class Application(object):
         return f"{self.name} – {self.job['должность'] if self.job else 'Должность не указана'}"
 
     def create_caption(self):
-        job_info = "Не указана"
         if self.job:
             job_info = f"{self.job['объект']}|{self.job['должность']}|{self.job['пол']}|от {self.job['возраст_от']} до {self.job['возраст_до']}"
+        else:
+            job_info = "Не указана"
+        
+        if self.age:
+            age_info = f"{self.age.strftime('%d.%m.%Y')} ({calculate_age(self.age)} лет)"
+        else:
+            age_info = "Не указана"
+
+        if self.date_on_object:
+            date_on_object_info = self.date_on_object.strftime('%d.%m.%Y')
+        else:
+            date_on_object_info = "Не указана"
             
         caption = f"""
 *Должность:* {job_info}
 *ФИО:* {self.name}
 *Пол:* {self.gender}
 *Телефон:* {self.phone}
-*Дата рождения:* {self.age.strftime('%d.%m.%Y')} ({calculate_age(self.age)} лет)
-*Дата прибытия на объект:* {self.date_on_object.strftime('%d.%m.%Y')}
+*Дата рождения:* {age_info}
+*Дата прибытия на объект:* {date_on_object_info}
 *Резиденство:* {self.residence}
 *Кол-во документов:* {len(self.photo_ids)} шт.
 *Комментарий:* {self.comment or 'Нет комментария'}
