@@ -520,18 +520,14 @@ class Application(object):
 
     @classmethod
     def count_apps(cls, user_id=None):
-        dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
         return cls.applications.count_documents({
             **{"user_id": user_id if user_id is not None else {"$exists": True}},
-            "$or": [{"status": {"$ne": Status.ACCEPTED.value,}},
-                    {"_id": {"$gt": dt},}],
+            "$or": [{"status": {"$ne": Status.ACCEPTED.value,}}],
         })
 
     @classmethod
     def count_accepted_apps(cls, user_id=None):
-        dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
         return cls.applications.count_documents({"status": Status.ACCEPTED.value,
-                                                 "_id": {"$gt": dt},
                                                  **{"user_id": user_id if user_id is not None else {"$exists": True}}})
 
     @classmethod
