@@ -261,7 +261,11 @@ class Application(object):
         dt: datetime = ddp.get_date_data(text).date_obj
         if dt is None:
             raise DateOnObjectNotFoundException()
-        if dt < datetime.now():
+
+        current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        if dt < current_date:
             raise DateOnObjectNotFoundException()
         return dt
 
@@ -412,11 +416,9 @@ class Application(object):
         return caption
 
     def present_to(self, bot: telebot.TeleBot, chat_id):
-        markup = None
-        if self.status != Status.ACCEPTED:
-            markup = quick_markup({
-                "Редактировать": {'callback_data': f"appedit_{self._id}"}
-            }, row_width=1)
+        markup = quick_markup({
+            "Редактировать": {'callback_data': f"appedit_{self._id}"}
+        }, row_width=1)
         caption = self.create_caption()
         bot.send_document(chat_id,
                           types.InputFile(self.passport_pdf, "passport.pdf"),
@@ -493,8 +495,10 @@ class Application(object):
 
     def reset_status(self):
         self.__data = self.applications.find_one_and_update({"_id": self._id},
-                                                            {"$unset": {"status": 1,
-                                                                      "reason": 1}},
+                                                            {"$unset": {
+                                                                "status": 1,
+                                                                "reason": 1},
+                                                             "$set": {"edited": True}},
                                                             return_document=ReturnDocument.AFTER)
         return self
 

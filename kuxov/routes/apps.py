@@ -152,8 +152,14 @@ def update_table(application):
         if not access_name:
             return
 
+        application_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+        status = "Принят" if application["status"] == "accepted" else "Отклонен"
+        if application.get("edited") is True:
+            status += " (ред.)"
+        reason = application.get("reason", "")
+
         values = [
-            [datetime.now().strftime("%Y-%m-%d %H:%M"), access_name, application["name"], "Принят" if application["status"] == "accepted" else "Отклонен", application.get("reason", "")]
+            [application_time, access_name, application["name"], status, reason]
         ]
         body = {"values": values}
 
