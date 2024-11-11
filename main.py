@@ -12,7 +12,7 @@ from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FA
     create_list_commands_markup, DONT_UNDERSTOOD_MESSAGE, PassportNotEnoughException, INVALID_JOBS_LIST_MESSAGE, \
     ENTER_DATE_ON_OBJECT_MESSAGE, ENTER_COMMENT_MESSAGE, SkipCommentReplyMarkup
 from kuxov.db import UsersDb, AccessDb
-from kuxov.state import State, EnterMode
+from kuxov.state import State, EnterMode, ListMode
 from kuxov.alert import alert
 
 
@@ -90,15 +90,20 @@ def list_welcome(message: types.Message):
     db.set_current_state(tg_id, State.LIST_MENU)
 
     if message.text.startswith("Все анкеты"):
+        list_mode = ListMode.ALL
         applications = Application.list(tg_id)
     elif message.text.startswith("Список анкет"):
+        list_mode = ListMode.ALL
         applications = None
     elif message.text.startswith("Новые анкеты"):
+        list_mode = ListMode.NEW
         applications = Application.list_not_verified(tg_id)
     elif message.text.startswith("Отклоненные анкеты"):
+        list_mode = ListMode.DECLINED
         applications = Application.list_declined(tg_id)
-        bot.send_message(tg_id, "Обратитесь к вашему менеджеру.")
+        bot.send_message(tg_id, "Обратитесь к вашему менеджеру по поводу отклоненных анкет.")
     elif message.text.startswith("Принятые анкеты"):
+        list_mode = ListMode.ACCEPTED
         applications = Application.list_accepted(tg_id)
     else:
         applications = []
@@ -107,12 +112,80 @@ def list_welcome(message: types.Message):
         if len(applications) == 0:
             bot.send_message(tg_id, "Пусто.")
         else:
-            for application in applications:
-                application.present_to(bot, tg_id)
+            send_applications_page(bot, tg_id, applications, 0, list_mode)
 
     bot.send_message(tg_id,
                      "Какие анкеты интересуют ?",
                      reply_markup=create_list_commands_markup(tg_id))
+
+
+def send_applications_page(bot, tg_id, applications, page, list_mode):
+    APPS_PER_PAGE = 5
+    total_pages = (len(applications) + APPS_PER_PAGE - 1) // APPS_PER_PAGE
+    
+    start_idx = page * APPS_PER_PAGE
+    end_idx = min(start_idx + APPS_PER_PAGE, len(applications))
+    
+    message_text = ""
+    for i, app in enumerate(applications[start_idx:end_idx], 1):
+        message_text += f"{i}. {app.get_list_item()}\n"
+    
+    markup = types.InlineKeyboardMarkup(row_width=5)
+
+    app_buttons = []
+    for i in range(1, end_idx - start_idx + 1):
+        app_buttons.append(types.InlineKeyboardButton(
+            str(i),
+            callback_data=f"show_app_{applications[start_idx + i - 1].id}"
+        ))
+    markup.add(*app_buttons)
+    
+    if total_pages > 1:
+        nav_buttons = []
+        if page > 0:
+            nav_buttons.append(types.InlineKeyboardButton("<<", callback_data=f"page_{list_mode.name}_{page-1}"))
+        nav_buttons.append(types.InlineKeyboardButton(
+            f"{page + 1}/{total_pages}",
+            callback_data="current_page"
+        ))
+        if page < total_pages - 1:
+            nav_buttons.append(types.InlineKeyboardButton(">>", callback_data=f"page_{list_mode.name}_{page+1}"))
+        markup.row(*nav_buttons)
+    
+    bot.send_message(tg_id, message_text, reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith(('page_', 'show_app_', 'current_page')))
+@alert
+def handle_pagination(call):
+    tg_id = call.from_user.id
+    if call.data == 'current_page':
+        bot.answer_callback_query(call.id)
+        return
+        
+    if call.data.startswith('page_'):
+        list_mode = ListMode[call.data.split('_')[1]]
+        page = int(call.data.split('_')[2])
+        if list_mode == ListMode.ALL:
+            applications = Application.list(tg_id)
+        elif list_mode == ListMode.NEW:
+            applications = Application.list_not_verified(tg_id)
+        elif list_mode == ListMode.DECLINED:
+            applications = Application.list_declined(tg_id)
+        elif list_mode == ListMode.ACCEPTED:
+            applications = Application.list_accepted(tg_id)
+        else:
+            raise NotImplementedError()
+        if applications:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+            send_applications_page(bot, tg_id, applications, page, list_mode)
+            
+    elif call.data.startswith('show_app_'):
+        app_id = ObjectId(call.data.split('_')[2])
+        application = Application(app_id)
+        application.present_to(bot, tg_id)
+            
+    bot.answer_callback_query(call.id)
 
 
 @bot.message_handler(func=lambda message: True,

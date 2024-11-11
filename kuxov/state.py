@@ -25,3 +25,10 @@ class Status(Enum):
 class EnterMode(Enum):
     FILLING = auto()
     EDITING = auto()
+
+
+class ListMode(Enum):
+    ALL = auto()
+    NEW = auto()
+    ACCEPTED = auto()
+    DECLINED = auto()

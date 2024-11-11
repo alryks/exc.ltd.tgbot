@@ -362,44 +362,38 @@ class Application(object):
 
     @classmethod
     def list(cls, user_id=None):
-        dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
-        return [Application(obj['_id'],
-                            data=obj)
-                for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True},
-                                                  "$or": [{"_id": {"$gt": dt}},
-                                                          {"status": {"$ne": Status.ACCEPTED.value}}]})]
-
-    @classmethod
-    def list_not_accepted(cls, user_id=None):
-        return [Application(obj['_id'],
-                            data=obj)
-                for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True},
-                                                  "status": {"$ne": Status.ACCEPTED.value}})]
+        return sorted([Application(obj['_id'], data=obj)
+                for obj in cls.applications.find({
+                    **{"user_id": user_id if user_id is not None else {"$exists": True}},
+                    "$or": [{"status": {"$ne": Status.ACCEPTED.value,}}],
+                })], key=lambda x: x.name.lower() if x.name else "")
 
     @classmethod
     def list_accepted(cls, user_id=None):
-        dt = ObjectId.from_datetime(datetime.now() - timedelta(days=2))
-        return [Application(obj['_id'],
-                            data=obj)
-                for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True},
-                                                  "status": Status.ACCEPTED.value,
-                                                  "_id": {"$gt": dt}})]
+        return sorted([Application(obj['_id'], data=obj)
+                for obj in cls.applications.find({"status": Status.ACCEPTED.value,
+                                              **{"user_id": user_id if user_id is not None else {"$exists": True}}})],
+                key=lambda x: x.name.lower() if x.name else "")
 
     @classmethod
     def list_declined(cls, user_id=None):
-        return [Application(obj['_id'],
-                            data=obj)
+        return sorted([Application(obj['_id'], data=obj)
                 for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True},
-                                                  "status": Status.DECLINED.value})]
+                                              "status": Status.DECLINED.value})],
+                key=lambda x: x.name.lower() if x.name else "")
 
     @classmethod
     def list_not_verified(cls, user_id=None):
-        return [Application(obj['_id'],
-                            data=obj)
+        return sorted([Application(obj['_id'], data=obj)
                 for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True},
-                                                  "status": {"$exists": False},
-                                                  **{main_field: {"$exists": True}
-                                                     for main_field in Application.MAIN_FIELDS}})]
+                                              "status": {"$exists": False},
+                                              **{main_field: {"$exists": True}
+                                                 for main_field in Application.MAIN_FIELDS}})],
+                key=lambda x: x.name.lower() if x.name else "")
+
+    def get_list_item(self):
+        """Возвращает строку для отображения в списке"""
+        return f"{self.name} – {self.job['должность'] if self.job else 'Должность не указана'}"
 
     def create_caption(self):
         job_info = "Не указана"
