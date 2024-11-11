@@ -402,8 +402,12 @@ class Application(object):
                                                      for main_field in Application.MAIN_FIELDS}})]
 
     def create_caption(self):
+        job_info = "Не указана"
+        if self.job:
+            job_info = f"{self.job['объект']}|{self.job['должность']}|{self.job['пол']}|от {self.job['возраст_от']} до {self.job['возраст_до']}"
+            
         caption = f"""
-*Должность:* {self.job['объект']}|{self.job['должность']}|{self.job['пол']}|от {self.job['возраст_от']} до {self.job['возраст_до']}
+*Должность:* {job_info}
 *ФИО:* {self.name}
 *Пол:* {self.gender}
 *Телефон:* {self.phone}
