@@ -210,7 +210,7 @@ def update_table(application, access_db, users_db, range_name):
                 access_id = application.get("user_id", "")
             access_name = access_db.get_name(access_id) if access_id else ""
             job_info = ""
-            if application.job:
+            if application.get("job", ""):
                 job_info = f"{application['job']['объект']}|{application['job']['должность']}|{application['job']['пол']}|от {application['job']['возраст_от']} до {application['job']['возраст_до']}"
             name = application.get("name", "")
             gender = application.get("gender", "")
