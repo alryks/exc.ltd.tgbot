@@ -103,6 +103,12 @@ class UsersDb:
                               {"$unset": {"application_id": ""}},
                               upsert=True)
 
+    def get_user_from_application(self, application_id):
+        obj = self.users.find_one({"application_id": ObjectId(application_id)})
+        if obj is None:
+            return None
+        return obj["tg_id"]
+
 
 class AccessDb:
     access: Collection = db.access

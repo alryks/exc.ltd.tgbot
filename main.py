@@ -2,7 +2,7 @@ from bson import ObjectId
 from parse import parse
 from telebot import types
 from kuxov.application import Application
-from kuxov.scenario import bot
+from kuxov.scenario import bot, SPREADSHEET_RANGE_LOGS
 from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FAIL_MESSAGE, create_send_all_markup, \
     FIRST_INTERACTION_MESSAGE, ENTER_NAME_MESSAGE, ENTER_PHONE_MESSAGE, ENTER_AGE_MESSAGE, \
     ENTER_RESIDENCE_MESSAGE, ENTER_PHOTO_MESSAGE, NameNotFoundException, PhoneNotFoundException, AgeNotFoundException, \
@@ -14,6 +14,7 @@ from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FA
 from kuxov.db import UsersDb, AccessDb
 from kuxov.state import State, EnterMode, ListMode
 from kuxov.alert import alert
+from kuxov.routes.utils import update_table
 
 
 db = UsersDb()
@@ -379,6 +380,7 @@ def send_welcome(message: types.Message):
                                     edit_message_id=edit_message_id)
                 db.set_entering_mode(message.chat.id,
                                      EnterMode.FILLING)
+            return
         elif message.text == "Закончить ввод фото":
             db.delete_message_after(tg_id,
                                     message.message_id,
@@ -405,7 +407,8 @@ def send_welcome(message: types.Message):
     else:
         db.delete_message_after(tg_id,
                                 bot.reply_to(message, DONT_UNDERSTOOD_MESSAGE).message_id)
-
+        return
+    update_table(application.data, access_db, db, SPREADSHEET_RANGE_LOGS)
 
 @bot.callback_query_handler(func=lambda call: True)
 @alert
