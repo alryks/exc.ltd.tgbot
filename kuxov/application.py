@@ -365,7 +365,6 @@ class Application(object):
         return sorted([Application(obj['_id'], data=obj)
                 for obj in cls.applications.find({
                     **{"user_id": user_id if user_id is not None else {"$exists": True}},
-                    "$or": [{"status": {"$ne": Status.ACCEPTED.value,}}],
                 })], key=lambda x: x.name.lower() if x.name else "")
 
     @classmethod
@@ -522,7 +521,6 @@ class Application(object):
     def count_apps(cls, user_id=None):
         return cls.applications.count_documents({
             **{"user_id": user_id if user_id is not None else {"$exists": True}},
-            "$or": [{"status": {"$ne": Status.ACCEPTED.value,}}],
         })
 
     @classmethod
