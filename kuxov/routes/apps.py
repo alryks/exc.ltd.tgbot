@@ -4,11 +4,12 @@ from flask import jsonify, request
 
 from .errors import OK, ERROR, MISSING_PARAMETER_ERROR_API_KEY, BAD_API_KEY_ERROR, MISSING_PARAMETER_ERROR_TG_ID, BAD_TG_ID_ERROR, MISSING_PARAMETER_ERROR_STATUS, \
     BAD_APPLICATION_ID_ERROR, MISSING_PARAMETER_ERROR_APPLICATION_ID, BAD_STATUS_ERROR, MISSING_PARAMETER_ERROR_APPS
-from .utils import describe, print_output_json, check_missing_keys, check_key, update_table
+from .utils import describe, print_output_json, check_missing_keys, check_key
+from ..utils import update_table
 from ..application import Application
 from ..state import Status
 
-from kuxov.scenario import SPREADSHEET_RANGE, SPREADSHEET_RANGE_LOGS
+from kuxov.scenario import SPREADSHEET_RANGE
 
 from kuxov.db import AccessDb, UsersDb
 
@@ -127,7 +128,7 @@ def add_apps_endpoints(app, no_key):
             elif status == Status.DECLINED:
                 application.decline(reason=reason)
 
-            update_table(application.data, access_db, users_db, SPREADSHEET_RANGE)
+            update_table(SPREADSHEET_RANGE, application.data, access_db, users_db)
 
         return jsonify({
             "status": OK

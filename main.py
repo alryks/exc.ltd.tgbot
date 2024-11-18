@@ -13,8 +13,7 @@ from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FA
     ENTER_DATE_ON_OBJECT_MESSAGE, ENTER_COMMENT_MESSAGE, SkipCommentReplyMarkup
 from kuxov.db import UsersDb, AccessDb
 from kuxov.state import State, EnterMode, ListMode
-from kuxov.alert import alert
-from kuxov.routes.utils import update_table
+from kuxov.utils import update_table
 
 
 db = UsersDb()
@@ -23,9 +22,9 @@ access_db = AccessDb()
 
 @bot.message_handler(commands=['start'],)
 @bot.message_handler(func=lambda message: message.text == "В главное меню")
-@alert
 @exception_handler(bot, db)
 def welcome(message: types.Message):
+    raise NotImplementedError()
     tg_id = message.from_user.id
     db.set_current_state(tg_id, State.MAIN_MENU)
     bot.reply_to(message, WELCOME_MESSAGE,
@@ -34,7 +33,7 @@ def welcome(message: types.Message):
 
 @bot.message_handler(func=lambda message: db.is_admin(message.from_user.id),
                      commands=['sendall'],)
-@alert
+@exception_handler(bot, db)
 def start_send_all(message: types.Message):
     tg_id = message.from_user.id
     db.set_current_state(tg_id, State.SEND_ALL)
@@ -43,7 +42,7 @@ def start_send_all(message: types.Message):
 
 @bot.message_handler(func=lambda message: db.get_current_state(message.from_user.id) == State.SEND_ALL and db.is_admin(message.from_user.id),
                      content_types=['audio', 'photo', 'voice', 'video', 'document', 'text', 'location', 'contact', 'sticker'])
-@alert
+@exception_handler(bot, db)
 def send_all(message: types.Message):
     if message.text == "Отмена":
         return welcome(message)
@@ -58,7 +57,6 @@ def send_all(message: types.Message):
 
 
 @bot.message_handler(func=lambda message: message.text == "Новая анкета")
-@alert
 @exception_handler(bot, db)
 def reset(message: types.Message):
     tg_id = message.from_user.id
@@ -84,7 +82,6 @@ def reset(message: types.Message):
                                                           "Новые анкеты",
                                                           "Принятые анкеты",
                                                           "Отклоненные анкеты"]))
-@alert
 @exception_handler(bot, db)
 def list_welcome(message: types.Message):
     tg_id = message.from_user.id
@@ -119,7 +116,7 @@ def list_welcome(message: types.Message):
                      "Какие анкеты интересуют ?",
                      reply_markup=create_list_commands_markup(tg_id))
 
-
+@exception_handler(bot, db)
 def send_applications_page(bot, tg_id, applications, page, list_mode):
     APPS_PER_PAGE = 5
     total_pages = (len(applications) + APPS_PER_PAGE - 1) // APPS_PER_PAGE
@@ -157,7 +154,7 @@ def send_applications_page(bot, tg_id, applications, page, list_mode):
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith(('page_', 'show_app_', 'current_page')))
-@alert
+@exception_handler(bot, db)
 def handle_pagination(call):
     tg_id = call.from_user.id
     if call.data == 'current_page':
@@ -191,7 +188,6 @@ def handle_pagination(call):
 
 @bot.message_handler(func=lambda message: True,
                      content_types=["text", "photo"])
-@alert
 @exception_handler(bot, db)
 def send_welcome(message: types.Message):
     tg_id = message.from_user.id
@@ -408,10 +404,9 @@ def send_welcome(message: types.Message):
         db.delete_message_after(tg_id,
                                 bot.reply_to(message, DONT_UNDERSTOOD_MESSAGE).message_id)
         return
-    update_table(application.data, access_db, db, SPREADSHEET_RANGE_LOGS)
+    update_table(SPREADSHEET_RANGE_LOGS, application.data, access_db, db)
 
 @bot.callback_query_handler(func=lambda call: True)
-@alert
 def handle_clicks(call: types.CallbackQuery):
     tg_id = call.from_user.id
     # bot.delete_message(tg_id, call.message.message_id)
@@ -505,6 +500,7 @@ def handle_clicks(call: types.CallbackQuery):
         db.unset_current_application(tg_id)
         bot.send_message(tg_id, WELCOME_MESSAGE,
                          reply_markup=create_commands_markup())
+        update_table(SPREADSHEET_RANGE_LOGS, application.data, access_db, db)
     else:
         raise NotImplementedError()
 

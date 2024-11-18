@@ -2,6 +2,12 @@ import json
 import os.path
 
 from telebot import types
+import telebot
+
+from .scenario import SPREADSHEET_RANGE_ERRORS, ADMIN_IDS
+from .utils import update_table
+
+import traceback
 
 
 SEND_ALL_MESSAGE = """
@@ -347,15 +353,43 @@ class PassportNotEnoughException(BadInformationException):
 def exception_handler(bot, db):
     def temp_decorator(func):
 
-        def temp(message):
+        def temp(message, *args, **kwargs):
             tg_id = message.from_user.id
             try:
-                func(message)
+                func(message, *args, **kwargs)
             except BadInformationException as e:
                 db.delete_message_after(tg_id,
                                         message.message_id,
                                         bot.reply_to(message, e.MESSAGE,
                                                      reply_markup=e.MARKUP()).message_id)
+            except Exception:
+                args = [message] + list(args)
+                trcbck = traceback.format_exc()
+                message = f"""<b><i>--- ALERT START ---</i></b>
+<b>Error:</b>
+<pre>{telebot.formatting.escape_html(trcbck)}</pre>
+<b>In function:</b> <code>{telebot.formatting.escape_html(func.__name__)}</code>
+<b>Arguments:</b>"""
+                args_message = ""
+                for i, arg in enumerate(args):
+                    message += f"\n<i>{i + 1}.</i>\n{telebot.formatting.escape_html(str(arg))}"
+                    args_message += f"\n{i + 1}.\n{arg}"
+                message += "\n\n<b>Keyword arguments:</b>"
+                kwargs_message = ""
+                for key, value in kwargs.items():
+                    if value is not None:
+                        message += f"\n<i>{telebot.formatting.escape_html(key)}:</i>\n{telebot.formatting.escape_html(str(value))}"
+                        kwargs_message += f"\n{key}:\n{value}"
+                update_table(SPREADSHEET_RANGE_ERRORS, trcbck=trcbck, func_name=func.__name__, args=args_message,
+                             kwargs=kwargs_message)
+                message += "\n\n<b><i>--- ALERT END ---</i></b>"
+                messages = telebot.util.split_string(message, 4096)
+                for admin_id in ADMIN_IDS:
+                    try:
+                        for msg in messages:
+                            bot.send_message(admin_id, msg, parse_mode="HTML")
+                    except:
+                        pass
                 return
 
         return temp
