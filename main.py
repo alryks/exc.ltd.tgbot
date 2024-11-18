@@ -46,11 +46,16 @@ def send_all(message: types.Message):
     if message.text == "Отмена":
         return welcome(message)
     user_ids = db.get_all_user_ids()
-    try:
-        for user_id in user_ids:
+    sent_to_all = True
+    for user_id in user_ids:
+        try:
             bot.copy_message(user_id, message.chat.id, message.message_id)
+        except:
+            sent_to_all = False
+
+    if sent_to_all:
         bot.reply_to(message, SEND_ALL_SUCCESS_MESSAGE)
-    except:
+    else:
         bot.reply_to(message, SEND_ALL_FAIL_MESSAGE)
     return welcome(message)
 
