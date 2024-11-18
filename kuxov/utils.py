@@ -62,7 +62,7 @@ def update_table(range_name, application=None, access_db=None, users_db=None, tr
             submitted = "Да" if application.get("submitted", False) else "Нет"
 
             values = [
-                [application_time, application_id, access_name, job_info, name, gender, phone, age, date_on_object, residence, comment, status, reason, submitted]
+                [application_time, application_id, access_name, job_info, name, gender, phone, age, date_on_object, residence, comment, submitted]
             ]
         elif range_name == SPREADSHEET_RANGE_ERRORS:
             values = [
