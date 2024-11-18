@@ -24,7 +24,6 @@ access_db = AccessDb()
 @bot.message_handler(func=lambda message: message.text == "В главное меню")
 @exception_handler(bot, db)
 def welcome(message: types.Message):
-    raise NotImplementedError()
     tg_id = message.from_user.id
     db.set_current_state(tg_id, State.MAIN_MENU)
     bot.reply_to(message, WELCOME_MESSAGE,
