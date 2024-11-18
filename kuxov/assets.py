@@ -354,10 +354,10 @@ def exception_handler(bot, db):
     def temp_decorator(func):
 
         def temp(message, *args, **kwargs):
-            tg_id = message.from_user.id
             try:
                 func(message, *args, **kwargs)
             except BadInformationException as e:
+                tg_id = message.from_user.id
                 db.delete_message_after(tg_id,
                                         message.message_id,
                                         bot.reply_to(message, e.MESSAGE,
