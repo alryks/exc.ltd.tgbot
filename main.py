@@ -1,6 +1,7 @@
 from bson import ObjectId
 from parse import parse
 from telebot import types
+from telebot.util import quick_markup
 from kuxov.application import Application
 from kuxov.scenario import bot, SPREADSHEET_RANGE_LOGS
 from kuxov.assets import SEND_ALL_MESSAGE, SEND_ALL_SUCCESS_MESSAGE, SEND_ALL_FAIL_MESSAGE, create_send_all_markup, \
@@ -487,12 +488,24 @@ def handle_clicks(call: types.CallbackQuery):
         db.set_entering_mode(call.from_user.id, EnterMode.EDITING,
                              edit_message_id=call.message.message_id)
     elif call.data == "del":
+        markup = quick_markup({
+            "Да, удалить": {"callback_data": "confirm_delete"},
+            "Нет, отменить": {"callback_data": "cancel_delete"}
+        }, row_width=2)
+        bot.edit_message_reply_markup(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=markup
+        )
+    elif call.data == "confirm_delete":
         application.delete()
         bot.send_message(call.from_user.id, APPLICATION_DELETE_MESSAGE)
         db.set_current_state(tg_id, State.MAIN_MENU)
         db.unset_current_application(tg_id)
         bot.send_message(tg_id, WELCOME_MESSAGE,
                          reply_markup=create_commands_markup())
+    elif call.data == "cancel_delete":
+        application.send_to(bot, call.message.chat.id, edit_message_id=call.message.message_id)
     elif call.data == "save":
         application.save(call.from_user.id)
         bot.send_message(call.from_user.id, APPLICATION_SAVE_MESSAGE)
