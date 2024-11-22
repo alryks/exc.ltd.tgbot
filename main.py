@@ -359,7 +359,8 @@ def send_welcome(message: types.Message):
                              ENTER_COMMENT_MESSAGE,
                              reply_markup=SkipCommentReplyMarkup)
             db.set_current_state(message.chat.id, State.ENTER_COMMENT)
-            return
+            application.add_passport_pdf()
+
 
         if message.photo:
             for photo in message.photo[-1:]:
@@ -381,17 +382,11 @@ def send_welcome(message: types.Message):
                 db.set_entering_mode(message.chat.id,
                                      EnterMode.FILLING)
             return
-        elif message.text == "Закончить ввод фото":
+        elif message.text == "Закончить ввод фото" and len(application.photo_ids) == 0:
             db.delete_message_after(tg_id,
                                     message.message_id,
                                     bot.reply_to(message,
                                                  PassportNotEnoughException.MESSAGE).message_id)
-            return
-        else:
-            db.delete_message_after(tg_id,
-                                    message.message_id,
-                                    bot.reply_to(message,
-                                                 PassportNotFoundException.MESSAGE).message_id)
             return
     elif state == State.ENTER_COMMENT:
         if message.text != "Пропустить":
@@ -408,7 +403,8 @@ def send_welcome(message: types.Message):
         db.delete_message_after(tg_id,
                                 bot.reply_to(message, DONT_UNDERSTOOD_MESSAGE).message_id)
         return
-    update_table(SPREADSHEET_RANGE_LOGS, application.data, access_db, db)
+    update_table(SPREADSHEET_RANGE_LOGS, application, access_db, db)
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_clicks(call: types.CallbackQuery):
@@ -504,7 +500,7 @@ def handle_clicks(call: types.CallbackQuery):
         db.unset_current_application(tg_id)
         bot.send_message(tg_id, WELCOME_MESSAGE,
                          reply_markup=create_commands_markup())
-        update_table(SPREADSHEET_RANGE_LOGS, application.data, access_db, db)
+        update_table(SPREADSHEET_RANGE_LOGS, application, access_db, db)
     else:
         raise NotImplementedError()
 

@@ -21,48 +21,53 @@ def update_table(range_name, application=None, access_db=None, users_db=None, tr
         service = build("sheets", "v4", credentials=creds)
 
         if range_name == SPREADSHEET_RANGE:
-            if "status" not in application:
+            app_data = application.data
+            if "status" not in app_data:
                 return
-            access_name = access_db.get_name(application["user_id"])
+            access_name = access_db.get_name(app_data["user_id"])
             if not access_name:
                 return
             application_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-            status = "Принят" if application["status"] == "accepted" else "Отклонен"
-            if application.get("edited") is True:
+            status = "Принят" if app_data["status"] == "accepted" else "Отклонен"
+            if app_data.get("edited") is True:
                 status += " (ред.)"
-            reason = application.get("reason", "")
+            reason = app_data.get("reason", "")
 
             values = [
-                [application_time, access_name, application["name"], status, reason]
+                [application_time, access_name, app_data["name"], status, reason]
             ]
         elif range_name == SPREADSHEET_RANGE_LOGS:
+            app_data = application.data
             application_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            application_id = str(application.get("_id", ""))
+            application_id = str(app_data.get("_id", ""))
             access_id = users_db.get_user_from_application(application_id)
             if not access_id:
-                access_id = application.get("user_id", "")
+                access_id = app_data.get("user_id", "")
             access_name = access_db.get_name(access_id) if access_id else ""
             job_info = ""
-            if application.get("job", ""):
-                job_info = f"{application['job']['объект']}|{application['job']['должность']}|{application['job']['пол']}|от {application['job']['возраст_от']} до {application['job']['возраст_до']}"
-            name = application.get("name", "")
-            gender = application.get("gender", "")
-            phone = application.get("phone", "")
-            age = f"{application.get('age', '').strftime('%d.%m.%Y')}" if application.get("age", "") else ""
-            date_on_object = f"{application.get('date_on_object', '').strftime('%d.%m.%Y')}" if application.get("date_on_object", "") else ""
-            residence = application.get("residence", "")
-            comment = application.get("comment", "")
+            if app_data.get("job", ""):
+                job_info = f"{app_data['job']['объект']}|{app_data['job']['должность']}|{app_data['job']['пол']}|от {app_data['job']['возраст_от']} до {app_data['job']['возраст_до']}"
+            name = app_data.get("name", "")
+            gender = app_data.get("gender", "")
+            phone = app_data.get("phone", "")
+            age = f"{app_data.get('age', '').strftime('%d.%m.%Y')}" if app_data.get("age", "") else ""
+            date_on_object = f"{app_data.get('date_on_object', '').strftime('%d.%m.%Y')}" if app_data.get("date_on_object", "") else ""
+            residence = app_data.get("residence", "")
+            photo_pdf = app_data.get("photo_pdf", "")
+            if photo_pdf:
+                photo_pdf = application.passport_pdf_url
+            comment = app_data.get("comment", "")
             # status = ""
             # reason = ""
-            # if application.get("status", "") in ["accepted", "declined"]:
-            #     status = "Принят" if application.get("status", "") == "accepted" else "Отклонен"
-            #     if application.get("edited") is True:
+            # if app_data.get("status", "") in ["accepted", "declined"]:
+            #     status = "Принят" if app_data.get("status", "") == "accepted" else "Отклонен"
+            #     if app_data.get("edited") is True:
             #         status += " (ред.)"
-            #     reason = application.get("reason", "")
-            submitted = "Да" if application.get("submitted", False) else "Нет"
+            #     reason = app_data.get("reason", "")
+            submitted = "Да" if app_data.get("submitted", False) else "Нет"
 
             values = [
-                [application_time, application_id, access_name, job_info, name, gender, phone, age, date_on_object, residence, comment, submitted]
+                [application_time, application_id, access_name, job_info, name, gender, phone, age, date_on_object, residence, comment, photo_pdf, submitted]
             ]
         elif range_name == SPREADSHEET_RANGE_ERRORS:
             values = [

@@ -1,6 +1,6 @@
 import io
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 
 import telebot
 from dateparser.date import DateDataParser
@@ -20,9 +20,13 @@ import os
 from pathlib import Path
 from pymongo.collection import Collection, ReturnDocument
 
-from .utils import calculate_age
-
 from .state import Status
+
+
+def calculate_age(born):
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
 
 ddp = DateDataParser(languages=['ru'])
 
@@ -360,6 +364,11 @@ class Application(object):
             pdf_id = self.data.get("photo_pdf")
         return self.cdn.retrieve_pdf(pdf_id)
 
+    @property
+    def passport_pdf_url(self):
+        photo_pdf = self.data["photo_pdf"]
+        return self.cdn.url_for(photo_pdf, ext="pdf")
+
     @classmethod
     def list(cls, user_id=None):
         return sorted([Application(obj['_id'], data=obj)
@@ -436,7 +445,7 @@ class Application(object):
     def send_to(self, bot: telebot.TeleBot, chat_id,
                 edit_message_id=None):
         markup = quick_markup({
-            'Сохранить': {'callback_data': "save"},
+            'СОХРАНИТЬ': {'callback_data': "save"},
             'Удалить': {'callback_data': "del"},
             'Сменить имя': {'callback_data': "edit_name"},
             'Сменить тел': {'callback_data': "edit_phone"},

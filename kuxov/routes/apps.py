@@ -128,7 +128,7 @@ def add_apps_endpoints(app, no_key):
             elif status == Status.DECLINED:
                 application.decline(reason=reason)
 
-            update_table(SPREADSHEET_RANGE, application.data, access_db, users_db)
+            update_table(SPREADSHEET_RANGE, application, access_db, users_db)
 
         return jsonify({
             "status": OK
