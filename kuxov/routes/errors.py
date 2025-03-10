@@ -1,5 +1,3 @@
-
-
 OK = "ok"
 ERROR = "error"
 
@@ -17,3 +15,4 @@ MISSING_PARAMETER_ERROR_STATUS = "missing_parameter_error_status"
 BAD_STATUS_ERROR = "bad_status_error"
 MISSING_PARAMETER_ERROR_JOBS = "missing_parameter_error_jobs"
 MISSING_PARAMETER_ERROR_APPS = "missing_parameter_error_apps"
+MISSING_PARAMETER_ERROR_BINDS = "missing_parameter_error_binds"

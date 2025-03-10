@@ -4,6 +4,7 @@ from flasgger import Swagger
 from .access import add_access_endpoints
 from .apps import add_apps_endpoints
 from .jobs import add_jobs_endpoints
+from .facility_bind import add_facility_bind_endpoints
 from .utils import CustomJSONEncoder
 
 
@@ -26,4 +27,5 @@ def get_backend_app(no_key):
     app = add_jobs_endpoints(app, no_key)
     app = add_apps_endpoints(app, no_key)
     app = add_access_endpoints(app, no_key)
+    app = add_facility_bind_endpoints(app, no_key)
     return app

@@ -161,3 +161,26 @@ class AccessDb:
 
     def clear(self):
         self.access.delete_many({})
+
+
+class FacilityBindDb:
+    facility_binds: Collection = db.facility_binds
+
+    def __init__(self):
+        super(FacilityBindDb, self).__init__()
+
+    def add_bind(self, name: str, facility: str):
+        self.facility_binds.update_one(
+            {"name": name},
+            {"$set": {"facility": facility}},
+            upsert=True
+        )
+
+    def get_facility(self, name: str) -> str:
+        obj = self.facility_binds.find_one({"name": name})
+        if obj is None:
+            return None
+        return obj.get("facility")
+
+    def clear(self):
+        self.facility_binds.delete_many({})
