@@ -1,4 +1,7 @@
 import datetime
+import asyncio
+from functools import partial
+from concurrent.futures import ThreadPoolExecutor
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
@@ -13,11 +16,16 @@ def calculate_age(born):
 
 
 def update_table(range_name, application=None, access_db=None, users_db=None, trcbck=None, func_name=None, args=None, kwargs=None):
-    creds = Credentials.from_service_account_file("credentials.json",
-                                                  scopes=["https://www.googleapis.com/auth/spreadsheets"])
-    value_input_option = "RAW"
+    with ThreadPoolExecutor() as pool:
+        pool.submit(_update_table_sync, range_name, application, access_db, users_db, trcbck, func_name, args, kwargs)
 
+
+def _update_table_sync(range_name, application=None, access_db=None, users_db=None, trcbck=None, func_name=None, args=None, kwargs=None):
     try:
+        creds = Credentials.from_service_account_file("credentials.json",
+                                                      scopes=["https://www.googleapis.com/auth/spreadsheets"])
+        value_input_option = "RAW"
+
         service = build("sheets", "v4", credentials=creds)
 
         if range_name == SPREADSHEET_RANGE:
@@ -88,5 +96,5 @@ def update_table(range_name, application=None, access_db=None, users_db=None, tr
             )
             .execute()
         )
-    except HttpError as error:
-        print(f"An error occurred: {error}")
+    except Exception as e:
+        print(f"Error in update_table: {e}")
