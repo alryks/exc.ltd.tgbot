@@ -375,6 +375,13 @@ class Application(object):
                 for obj in cls.applications.find({
                     **{"user_id": user_id if user_id is not None else {"$exists": True}},
                 })], key=lambda x: x.name.lower() if x.name else "")
+    
+    @classmethod
+    def list_raw(cls, user_id=None):
+        return list(cls.applications.find({
+            **{"user_id": user_id if user_id is not None else {"$exists": True}},
+        }))
+
 
     @classmethod
     def list_accepted(cls, user_id=None):
@@ -395,6 +402,7 @@ class Application(object):
         return sorted([Application(obj['_id'], data=obj)
                 for obj in cls.applications.find({"user_id": user_id if user_id is not None else {"$exists": True},
                                               "status": {"$exists": False},
+                                              "submitted": True,
                                               **{main_field: {"$exists": True}
                                                  for main_field in Application.MAIN_FIELDS}})],
                 key=lambda x: x.name.lower() if x.name else "")
@@ -558,4 +566,29 @@ class Application(object):
                                                             {"$set": {"comment": comment}},
                                                             return_document=ReturnDocument.AFTER)
         return self
+
+    @property
+    def referral(self):
+        return self.data.get("referral")
+
+    def set_referral(self, referral: str):
+        self.__data = self.applications.find_one_and_update({"_id": self._id},
+                                                            {"$set": {"referral": referral}},
+                                                            return_document=ReturnDocument.AFTER)
+        return self
+
+    @staticmethod
+    def extract_referral(text: str):
+        text = text.strip().replace('.', ' ').replace('!', ' ').lower()
+        if not re.match("^[а-яА-ЯёË -]+$", text) and text:
+            raise NameNotFoundException()
+        if not text:
+            return ""
+        text = '-'.join([txt.strip().capitalize()
+                         for txt in text.split('-')
+                         if len(txt.strip()) > 0])
+        text = ' '.join([txt.strip().capitalize()
+                         for txt in text.split(' ')
+                         if len(txt.strip()) > 0])
+        return text
 

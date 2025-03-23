@@ -182,5 +182,10 @@ class FacilityBindDb:
             return None
         return obj.get("facility")
 
+    def get_all_binds(self):
+        """Получает все записи привязок сотрудников к объектам"""
+        binds = list(self.facility_binds.find({}, {"_id": 0}))
+        return binds
+
     def clear(self):
         self.facility_binds.delete_many({})

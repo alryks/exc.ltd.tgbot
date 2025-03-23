@@ -67,6 +67,62 @@ def add_apps_endpoints(app, no_key):
         print(tg_id)
         return jsonify([Application.prepare_for_api(app.data)
                         for app in apps])
+    
+    @app.route('/get_user_apps', methods=['POST'])
+    @describe(["apps"],
+              name="get_user_apps",
+              description="""Get all applications for a specific user""",
+              inputs={
+                  "tg_id": 1124414212412421,
+              },
+              outputs={
+                  "status": OK,
+                  "applications": [{'_id': '6670b8bd7b24be8bc6dc7132',
+                                     'gender': 'Мужской',
+                                     'referral': 'Петров Петр Петрович',
+                                     'job': {'объект': 'Восток-Запад СПБ',
+                                             'должность': 'Комплектовщик'},
+                                     'name': 'Каспарьянц Георгий Григорьевич',
+                                     'phone': '+7 (926) 345-53-82',
+                                     'age': '1997-11-19 00:00:00',
+                                     'date_on_object': '2024-08-08 00:00:00',
+                                     'residence': 'Россия',
+                                     'photo_ids': [],
+                                     'photo_pdf': '6670b8bd7b24be8bc6dc7132',
+                                     'comment': 'Комментарий к анкете',
+                                     'status': 'accepted'}]
+              })
+    @check_missing_keys(
+        [("tg_id", {"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_TG_ID})],
+    )
+    def get_user_apps():
+        if not no_key:
+            if not check_key(request.headers.get("X-API-KEY")):
+                return jsonify({"status": ERROR,
+                                "status_code": BAD_API_KEY_ERROR})
+
+        try:
+            tg_id = request.json["tg_id"]
+            try:
+                tg_id = int(tg_id)
+            except:
+                return jsonify({
+                    "status": ERROR,
+                    "status_code": BAD_TG_ID_ERROR
+                })
+                
+            apps = Application.list_raw(tg_id)
+            print(apps)
+                
+            return jsonify({
+                "status": OK,
+                "applications": apps
+            })
+        except Exception as e:
+            return jsonify({
+                "status": ERROR,
+                "error": str(e)
+            })
 
     @app.route('/mark_apps', methods=['POST'])
     @describe(["apps"],

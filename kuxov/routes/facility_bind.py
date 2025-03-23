@@ -51,4 +51,50 @@ def add_facility_bind_endpoints(app, no_key):
             "status": OK
         })
 
+    @app.route('/get_facility_binds', methods=['POST'])
+    @describe(["facility_bind"],
+              name="get facility binds",
+              description="""Get all facility binds from system""",
+              inputs={},
+              outputs={
+                  "status": OK,
+                  "binds": [
+                      {
+                          "name": "Иванов Иван Иванович",
+                          "facility": "Восток-Запад СПБ"
+                      }
+                  ]
+              })
+    def get_facility_binds():
+        if not no_key:
+            try:
+                key = request.headers.get("X-API-KEY")
+            except:
+                return jsonify({"status": ERROR, "status_code": MISSING_PARAMETER_ERROR_API_KEY})
+
+            if not check_key(key):
+                return jsonify({"status": ERROR, "status_code": BAD_API_KEY_ERROR})
+
+        try:
+            # Получаем все привязки из базы данных
+            binds = facility_bind_db.get_all_binds()
+            
+            # Форматируем данные для ответа
+            formatted_binds = []
+            for bind in binds:
+                formatted_binds.append({
+                    "name": bind["name"],
+                    "facility": bind["facility"]
+                })
+                
+            return jsonify({
+                "status": OK,
+                "binds": formatted_binds
+            })
+        except Exception as e:
+            return jsonify({
+                "status": ERROR,
+                "error": str(e)
+            })
+
     return app 
