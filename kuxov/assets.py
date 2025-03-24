@@ -150,8 +150,7 @@ def get_jobs_list():
             jobs_list = json.load(f)
     else:
         jobs_list = JOBS_LIST
-    jobs_list = sorted(jobs_list,
-                       key=lambda x: x['объект'].lower())
+    jobs_list = list(filter(lambda x: x.get('удаленный_подбор', False), sorted(jobs_list, key=lambda x: x['объект'].lower())))
     return jobs_list
 
 
