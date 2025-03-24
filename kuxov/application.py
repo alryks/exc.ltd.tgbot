@@ -131,6 +131,8 @@ class Application(object):
                                                          phonenumbers.PhoneNumberFormat.NATIONAL)[1:]
         if "comment" in obj:
             obj['comment'] = f"СНП Бот: {obj['comment']}" if obj['comment'] else "СНП Бот: "
+        if "referral" not in obj:
+            obj['referral'] = ""
         return obj
 
     @property
