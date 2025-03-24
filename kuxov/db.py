@@ -14,15 +14,13 @@ class UsersDb:
         super(UsersDb, self).__init__()
 
     def get_all_user_ids(self):
-        return [user['tg_id'] for user in self.users.find({})]
+        return [user["tg_id"] for user in self.users.find({})]
 
     def reset_state(self, tg_id):
-        self.set_current_state(tg_id,
-                               State.FIRST_INTERACTION)
-        self.set_entering_mode(tg_id,
-                               EnterMode.FILLING)
+        self.set_current_state(tg_id, State.FIRST_INTERACTION)
+        self.set_entering_mode(tg_id, EnterMode.FILLING)
         application = self.get_current_application(tg_id)
-        if application.data is None or application.data.get('submitted'):
+        if application.data is None or application.data.get("submitted"):
             self.set_current_application(tg_id, Application.new().id)
         else:
             self.get_current_application(tg_id).reset()
@@ -41,25 +39,25 @@ class UsersDb:
         mode = user.get("mode", EnterMode.FILLING)
         return EnterMode(mode), user.get("edit_message_id")
 
-    def set_current_state(self, tg_id,
-                          state: State):
-        self.users.update_one({"tg_id": tg_id},
-                              {"$set": {"state": state.value}},
-                              upsert=True)
+    def set_current_state(self, tg_id, state: State):
+        self.users.update_one(
+            {"tg_id": tg_id}, {"$set": {"state": state.value}}, upsert=True
+        )
 
-    def set_entering_mode(self, tg_id,
-                          mode: EnterMode,
-                          edit_message_id=None):
-        self.users.update_one({"tg_id": tg_id},
-                              {"$set": {"mode": mode.value,
-                                        "edit_message_id": edit_message_id}},
-                              upsert=True)
+    def set_entering_mode(self, tg_id, mode: EnterMode, edit_message_id=None):
+        self.users.update_one(
+            {"tg_id": tg_id},
+            {"$set": {"mode": mode.value, "edit_message_id": edit_message_id}},
+            upsert=True,
+        )
 
     def delete_message_after(self, tg_id, *message_ids):
         message_ids = list(message_ids)
-        self.users.update_one({"tg_id": tg_id},
-                              {"$push": {"delete_message_ids": {"$each": message_ids}}},
-                              upsert=True)
+        self.users.update_one(
+            {"tg_id": tg_id},
+            {"$push": {"delete_message_ids": {"$each": message_ids}}},
+            upsert=True,
+        )
 
     def delete_messages(self, bot, tg_id):
         obj = self.users.find_one({"tg_id": tg_id})
@@ -67,13 +65,12 @@ class UsersDb:
             return
         for message_id in obj.get("delete_message_ids", []):
             try:
-                bot.delete_message(chat_id=tg_id,
-                                   message_id=message_id)
+                bot.delete_message(chat_id=tg_id, message_id=message_id)
             except:
                 pass
-        self.users.update_one({"tg_id": tg_id},
-                              {"$set": {"delete_message_ids": []}},
-                              upsert=True)
+        self.users.update_one(
+            {"tg_id": tg_id}, {"$set": {"delete_message_ids": []}}, upsert=True
+        )
 
     def is_admin(self, tg_id):
         return int(tg_id) in ADMIN_IDS
@@ -82,26 +79,26 @@ class UsersDb:
         obj = self.users.find_one({"tg_id": tg_id})
         if obj is None:
             raise RuntimeError("Can't find user")
-        if 'application_id' not in obj:
+        if "application_id" not in obj:
             application = Application.new()
-            self.set_current_application(tg_id,
-                                         application.id)
+            self.set_current_application(tg_id, application.id)
             print(application)
             return application
-        application = Application(obj['application_id'])
+        application = Application(obj["application_id"])
         print(application)
         return application
 
-    def set_current_application(self, tg_id,
-                                application_id):
-        self.users.update_one({"tg_id": tg_id},
-                              {"$set": {"application_id": ObjectId(application_id)}},
-                              upsert=True)
+    def set_current_application(self, tg_id, application_id):
+        self.users.update_one(
+            {"tg_id": tg_id},
+            {"$set": {"application_id": ObjectId(application_id)}},
+            upsert=True,
+        )
 
     def unset_current_application(self, tg_id):
-        self.users.update_one({"tg_id": tg_id},
-                              {"$unset": {"application_id": ""}},
-                              upsert=True)
+        self.users.update_one(
+            {"tg_id": tg_id}, {"$unset": {"application_id": ""}}, upsert=True
+        )
 
     def get_user_from_application(self, application_id):
         obj = self.users.find_one({"application_id": ObjectId(application_id)})
@@ -120,21 +117,27 @@ class AccessDb:
         tg_id = int(tg_id)
         if "all" in access_list:
             access_list = ["all"]
-        self.access.update_one({"tg_id": tg_id},
-                               {"$addToSet": {"access_list": {"$each": access_list}},
-                                "$set": {"name": name}},
-                               upsert=True)
+        self.access.update_one(
+            {"tg_id": tg_id},
+            {
+                "$addToSet": {"access_list": {"$each": access_list}},
+                "$set": {"name": name},
+            },
+            upsert=True,
+        )
 
     def deny_access(self, tg_id, access_list):
         tg_id = int(tg_id)
         if "all" in access_list:
-            self.access.update_one({"tg_id": tg_id},
-                                   {"$set": {"access_list": []}},
-                                   upsert=True)
+            self.access.update_one(
+                {"tg_id": tg_id}, {"$set": {"access_list": []}}, upsert=True
+            )
         else:
-            self.access.update_one({"tg_id": tg_id},
-                                   {"$pull": {"access_list": {"$each": access_list}}},
-                                   upsert=True)
+            self.access.update_one(
+                {"tg_id": tg_id},
+                {"$pull": {"access_list": {"$each": access_list}}},
+                upsert=True,
+            )
 
     def get_access_list(self, tg_id):
         tg_id = int(tg_id)
@@ -156,8 +159,7 @@ class AccessDb:
         access_list = self.get_access_list(tg_id)
         if "all" in access_list:
             return jobs_list
-        return list(filter(lambda x: x["объект"] in access_list,
-                           jobs_list))
+        return list(filter(lambda x: x["объект"] in access_list, jobs_list))
 
     def clear(self):
         self.access.delete_many({})
@@ -170,11 +172,7 @@ class FacilityBindDb:
         super(FacilityBindDb, self).__init__()
 
     def add_bind(self, name: str, facility: str):
-        self.facility_binds.update_one(
-            {"name": name},
-            {"$set": {"facility": facility}},
-            upsert=True
-        )
+        self.facility_binds.insert_one({"name": name, "facility": facility})
 
     def get_facility(self, name: str) -> str:
         obj = self.facility_binds.find_one({"name": name})

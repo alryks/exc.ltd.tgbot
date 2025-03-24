@@ -43,6 +43,7 @@ def add_apps_endpoints(app, no_key):
                                      'age': '1997-11-19 00:00:00',
                                      'date_on_object': '2024-08-08 00:00:00',
                                      'residence': 'Россия',
+                                     'referral': 'Петров Петр Петрович',
                                      'photo_ids': [],
                                      'photo_pdf': '6670b8bd7b24be8bc6dc7132',
                                      'comment': 'Комментарий к анкете'}]
@@ -87,6 +88,7 @@ def add_apps_endpoints(app, no_key):
                                      'age': '1997-11-19 00:00:00',
                                      'date_on_object': '2024-08-08 00:00:00',
                                      'residence': 'Россия',
+                                     'referral': 'Петров Петр Петрович',
                                      'photo_ids': [],
                                      'photo_pdf': '6670b8bd7b24be8bc6dc7132',
                                      'comment': 'Комментарий к анкете',
